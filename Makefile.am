@@ -34,7 +34,7 @@ EXTRA_DIST = 					\
 BUILT_EXTRA_DIST = 		\
 	ChangeLog
 
-INCLUDES = 				\
+AM_CPPFLAGS = 				\
 	$(PYTHON_INCLUDES) 		\
 	$(PYGOBJECT_CFLAGS)		\
 	$(GLIB_CFLAGS)			\
