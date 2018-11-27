@@ -398,8 +398,12 @@ _wrap_gtk_init_check(PyGObject *self, PyObject *args)
     PyObject *av;
     int argc, i;
     char **argv;
-    
+
     /* initialise GTK ... */
+    /* Don't parse sys.argv for now */
+    argc = 0;
+    argv = NULL;
+#if 0
     av = PySys_GetObject("argv");
     if (av != NULL) {
 	if (!PyList_Check(av)) {
@@ -408,7 +412,7 @@ _wrap_gtk_init_check(PyGObject *self, PyObject *args)
 	} else {
 	    argc = PyList_Size(av);
 	    for (i = 0; i < argc; i++)
-		if (!PyUnicode_Check(PyList_GetItem(av, i))) {
+               if (!PyString_Check(PyList_GetItem(av, i))) {
 		    PyErr_Warn(PyExc_Warning, "ignoring sys.argv: it must be a list of strings");
 		    av = NULL;
 		    break;
@@ -418,11 +422,12 @@ _wrap_gtk_init_check(PyGObject *self, PyObject *args)
     if (av != NULL) {
 	argv = g_new(char *, argc);
 	for (i = 0; i < argc; i++)
-	    argv[i] = g_strdup(PyUnicode_AsUTF8(PyList_GetItem(av, i)));
+           argv[i] = g_strdup(PyString_AsString(PyList_GetItem(av, i)));
     } else {
 	    argc = 0;
 	    argv = NULL;
     }
+#endif
 
     if (!gtk_init_check(&argc, &argv)) {
 	if (argv != NULL) {
@@ -431,24 +436,16 @@ _wrap_gtk_init_check(PyGObject *self, PyObject *args)
 	    g_free(argv);
 	}
 	PyErr_SetString(PyExc_RuntimeError, "could not open display");
-	/* set the LC_NUMERIC locale back to "C", as Python < 2.4 requires
-	 * that it be set that way. */
-#if PY_VERSION_HEX < 0x020400F0
-	setlocale(LC_NUMERIC, "C");
-#endif
 	return NULL;
     }
-    /* set the LC_NUMERIC locale back to "C", as Python < 2.4 requires that
-     * it be set that way. */
-#if PY_VERSION_HEX < 0x020400F0
-    setlocale(LC_NUMERIC, "C");
+#if 0
+    if (argv != NULL) {
+	PySys_SetArgv(argc, argv);
+	for (i = 0; i < argc; i++)
+	    g_free(argv[i]);
+	g_free(argv);
+    }
 #endif
-    /* if (argv != NULL) { */
-	/* PySys_SetArgv(argc, argv); */
-	/* for (i = 0; i < argc; i++) */
-	    /* g_free(argv[i]); */
-	/* g_free(argv); */
-    /* } */
 
     Py_INCREF(Py_None);
     return Py_None;
