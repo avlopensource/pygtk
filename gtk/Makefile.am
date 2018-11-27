@@ -216,7 +216,7 @@ gtkunixprint-types.defs: $(GTKUNIXPRINT_TYPES_DEFS) Makefile
 
 gdk.c: gdk-types.defs gdk.defs $(GDK_OVERRIDES)
 gtk.c: gdk-types.defs gtk-types.defs gtk.defs gdk-types.defs $(GTK_OVERRIDES)
-_gtk_la_CFLAGS = $(PYCAIRO_CFLAGS) $(GTK_CFLAGS)
+_gtk_la_CFLAGS = $(PY3CAIRO_CFLAGS) $(GTK_CFLAGS)
 _gtk_la_LDFLAGS = $(common_ldflags) -export-symbols-regex PyInit__gtk
 _gtk_la_LIBADD = $(GTK_LIBS)
 _gtk_la_SOURCES = 		\
@@ -268,7 +268,7 @@ gtkunixprint.c:						\
 		gtkunixprint.override gdk-types.defs	\
 		gtk-types.defs
 
-gtkunixprint_la_CFLAGS = $(PYCAIRO_CFLAGS) $(GTKUNIXPRINT_CFLAGS)
+gtkunixprint_la_CFLAGS = $(PY3CAIRO_CFLAGS) $(GTKUNIXPRINT_CFLAGS)
 gtkunixprint_la_LIBADD = $(GTKUNIXPRINT_LIBS)
 gtkunixprint_la_LDFLAGS = $(common_ldflags) -export-symbols-regex PyInit_gtkunixprint
 gtkunixprint_la_SOURCES = gtkunixprintmodule.c

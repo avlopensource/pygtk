@@ -199,30 +199,30 @@ else
   AC_MSG_RESULT($CODEGENDIR)
 fi
 
-dnl pycairo
+dnl py3cairo
 PYGTK_CODEGEN_DEFINES=""
 AC_SUBST([PYGTK_CODEGEN_DEFINES])
 
 gtk_version=""
-PKG_CHECK_MODULES(PYCAIRO, [pycairo >= pycairo_required_version],
+PKG_CHECK_MODULES(PY3CAIRO, [py3cairo >= pycairo_required_version],
         have_pycairo=true, have_pycairo=false)
-AC_SUBST(PYCAIRO_CFLAGS)
-AC_SUBST(PYCAIRO_LIBS)
+AC_SUBST(PY3CAIRO_CFLAGS)
+AC_SUBST(PY3CAIRO_LIBS)
 if test "x$have_pycairo" = "xtrue"; then
   PYGTK_CODEGEN_DEFINES="-DHAVE_PYCAIRO $PYGTK_CODEGEN_DEFINES";
-  AC_DEFINE([HAVE_PYCAIRO], [1], [Define to 1 if pycairo is available])
+  AC_DEFINE([HAVE_PYCAIRO], [1], [Define to 1 if py3cairo is available])
 
-  AC_DEFINE_UNQUOTED(PYCAIRO_MAJOR_VERSION, [`pkg-config --modversion pycairo | cut -d '.' -f 1`], dnl
-                     [pycairo major version])
-  AC_DEFINE_UNQUOTED(PYCAIRO_MINOR_VERSION, [`pkg-config --modversion pycairo | cut -d '.' -f 2`], dnl
-                     [pycairo minor version])
-  AC_DEFINE_UNQUOTED(PYCAIRO_MICRO_VERSION, [`pkg-config --modversion pycairo | cut -d '.' -f 3`], dnl
-                     [pycairo micro version])
+  AC_DEFINE_UNQUOTED(PYCAIRO_MAJOR_VERSION, [`pkg-config --modversion py3cairo | cut -d '.' -f 1`], dnl
+                     [py3cairo major version])
+  AC_DEFINE_UNQUOTED(PYCAIRO_MINOR_VERSION, [`pkg-config --modversion py3cairo | cut -d '.' -f 2`], dnl
+                     [py3cairo minor version])
+  AC_DEFINE_UNQUOTED(PYCAIRO_MICRO_VERSION, [`pkg-config --modversion py3cairo | cut -d '.' -f 3`], dnl
+                     [py3cairo micro version])
 
   dnl pangocairo
   PKG_CHECK_MODULES(PANGOCAIRO,
           [pangocairo >= pango_required_version,
-           pycairo >= pycairo_required_version],
+           py3cairo >= pycairo_required_version],
 	  have_pangocairo=true, have_pangocairo=false)
   if test ! $have_pangocairo
   then
@@ -412,7 +412,7 @@ if test "x$have_pycairo" = "xtrue"; then
 
 else
   AC_MSG_RESULT(no)
-  AC_MSG_RESULT(not checking for gtk due to missing pycairo)
+  AC_MSG_RESULT(not checking for gtk due to missing py3cairo)
   AM_CONDITIONAL(BUILD_PANGOCAIRO, false)
   AM_CONDITIONAL(BUILD_GTK, false)
   AM_CONDITIONAL(HAVE_GTK_2_10, false)
