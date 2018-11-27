@@ -35,13 +35,13 @@ import gobject
   DISPLAY_COLUMN_NAME,
   DISPLAY_COLUMN_DISPLAY,
   DISPLAY_NUM_COLUMNS
-) = range(3)
+) = list(range(3))
 
 (
   SCREEN_COLUMN_NUMBER,
   SCREEN_COLUMN_SCREEN,
   SCREEN_NUM_COLUMNS
-) = range(3)
+) = list(range(3))
 
 def find_toplevel_at_pointer(display):
     ''' Finds the toplevel window under the mouse pointer, if any.
@@ -300,7 +300,7 @@ class ChangeDisplayDemo(gtk.Dialog):
             if response_id != gtk.RESPONSE_OK:
                 break;
             new_screen_name = display_entry.get_chars(0, -1)
-            print new_screen_name
+            print(new_screen_name)
             if new_screen_name != "":
                 result = gtk.gdk.Display(new_screen_name)
                 if result is None:

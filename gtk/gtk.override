@@ -31,8 +31,8 @@ headers
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gdk-pixbuf/gdk-pixdata.h>
 
-#include <pycairo.h>
-extern Pycairo_CAPI_t *Pycairo_CAPI;
+#define PYCAIRO_NO_IMPORT
+#include <py3cairo.h>
 extern PyTypeObject PyGdkCairoContext_Type;
 
 #include "pygtk-private.h"
@@ -408,7 +408,7 @@ _wrap_gtk_init_check(PyGObject *self, PyObject *args)
 	} else {
 	    argc = PyList_Size(av);
 	    for (i = 0; i < argc; i++)
-		if (!PyString_Check(PyList_GetItem(av, i))) {
+		if (!PyUnicode_Check(PyList_GetItem(av, i))) {
 		    PyErr_Warn(PyExc_Warning, "ignoring sys.argv: it must be a list of strings");
 		    av = NULL;
 		    break;
@@ -418,7 +418,7 @@ _wrap_gtk_init_check(PyGObject *self, PyObject *args)
     if (av != NULL) {
 	argv = g_new(char *, argc);
 	for (i = 0; i < argc; i++)
-	    argv[i] = g_strdup(PyString_AsString(PyList_GetItem(av, i)));
+	    argv[i] = g_strdup(PyUnicode_AsUTF8(PyList_GetItem(av, i)));
     } else {
 	    argc = 0;
 	    argv = NULL;
@@ -443,12 +443,12 @@ _wrap_gtk_init_check(PyGObject *self, PyObject *args)
 #if PY_VERSION_HEX < 0x020400F0
     setlocale(LC_NUMERIC, "C");
 #endif
-    if (argv != NULL) {
-	PySys_SetArgv(argc, argv);
-	for (i = 0; i < argc; i++)
-	    g_free(argv[i]);
-	g_free(argv);
-    }
+    /* if (argv != NULL) { */
+	/* PySys_SetArgv(argc, argv); */
+	/* for (i = 0; i < argc; i++) */
+	    /* g_free(argv[i]); */
+	/* g_free(argv); */
+    /* } */
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -597,7 +597,7 @@ static PyObject *
 _wrap_gtk_selection_data__get_data(PyGObject *self, void *closure)
 {
     if (pyg_boxed_get(self, GtkSelectionData)->length >= 0) {
-        return PyString_FromStringAndSize(
+        return PyBytes_FromStringAndSize(
 	    (char*)pyg_boxed_get(self, GtkSelectionData)->data,
 	    pyg_boxed_get(self, GtkSelectionData)->length);
     } else {
@@ -618,7 +618,7 @@ _wrap_gtk_selection_data_set(PyGBoxed *self, PyObject *args, PyObject *kwargs)
     guchar *data;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     "Ois#:GtkSelectionData.set", kwlist,
+                                     "Oiy#:GtkSelectionData.set", kwlist,
                                      &py_type, &format, &data, &length))
         return NULL;
     type = pygdk_atom_from_pyobject(py_type);
@@ -664,7 +664,7 @@ _wrap_gtk_selection_data_get_targets(PyObject *self)
         for (i = 0; i < n_atoms; i++) {
             gchar *name = gdk_atom_name(targets[i]);
 
-            PyTuple_SetItem(ret, i, PyString_FromString(name));
+            PyTuple_SetItem(ret, i, PyUnicode_FromString(name));
             g_free(name);
         }
         g_free(targets);
@@ -776,7 +776,7 @@ _wrap_gtk_label_get(PyGObject *self)
 
     gtk_label_get(GTK_LABEL(self->obj), &text);
     if (text)
-        return PyString_FromString(text);
+        return PyUnicode_FromString(text);
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -883,13 +883,13 @@ _wrap_gtk_combo_set_popdown_strings(PyGObject *self, PyObject *args,
         PyObject *item = PySequence_GetItem(list, i);
 
         Py_DECREF(item);
-        if (!PyString_Check(item) && !PyUnicode_Check(item)) {
+        if (!PyUnicode_Check(item)) {
             PyErr_SetString(PyExc_TypeError,
-                            "sequence item not a string or unicode object");
+                            "sequence item not a string");
             g_list_free(glist);
             return NULL;
         }
-        glist = g_list_append(glist, PyString_AsString(item));
+        glist = g_list_append(glist, PyUnicode_AsUTF8(item));
     }
     gtk_combo_set_popdown_strings(GTK_COMBO(self->obj), glist);
     g_list_free(glist);
@@ -1029,14 +1029,14 @@ _wrap_gtk_binding_entry_add_signal(PyGObject *self, PyObject *args)
         case GTK_TYPE_ULONG:
             arg->arg_type = GTK_TYPE_LONG;
             item = PyTuple_GET_ITEM(args, i+1);
-            if (!PyInt_Check(item)) {
+            if (!PyLong_Check(item)) {
                 errmsg = g_strdup_printf("GtkBindingSet.add_signal "
                                          "arg[%u] must be int", i+1);
                 PyErr_SetString(PyExc_TypeError, errmsg);
                 g_free(errmsg);
                 goto arg_error;
             }
-            arg->d.long_data = (glong)PyInt_AsLong(item);
+            arg->d.long_data = (glong)PyLong_AsLong(item);
             break;
         case GTK_TYPE_FLOAT:
         case GTK_TYPE_DOUBLE:
@@ -1056,14 +1056,14 @@ _wrap_gtk_binding_entry_add_signal(PyGObject *self, PyObject *args)
             if (arg->arg_type != GTK_TYPE_IDENTIFIER)
                 arg->arg_type = GTK_TYPE_STRING;
             item = PyTuple_GET_ITEM(args, i+1);
-            if (!PyString_Check(item)) {
+            if (!PyUnicode_Check(item)) {
                 errmsg = g_strdup_printf("GtkBindingSet.add_signal arg[%u] "
                                          "must be non-empty string", i+1);
                 PyErr_SetString(PyExc_TypeError, errmsg);
                 g_free(errmsg);
                 goto arg_error;
             }
-            arg->d.string_data = (gchar*)PyString_AsString(item);
+            arg->d.string_data = (gchar*)PyUnicode_AsUTF8(item);
             if (!arg->d.string_data) {
                 errmsg = g_strdup_printf("GtkBindingSet.add_signal arg[%u] "
                                          "must be non-empty string", i+1);
@@ -1357,7 +1357,7 @@ _wrap_gtk_quit_add(PyObject *self, PyObject *args)
     data = Py_BuildValue("(ON)", callback, cbargs);
     if (data == NULL)
       return NULL;
-    return PyInt_FromLong(gtk_quit_add_full(main_level, quit_handler_marshal,
+    return PyLong_FromLong(gtk_quit_add_full(main_level, quit_handler_marshal,
                                             NULL, data, pyg_destroy_notify));
 }
 %%
@@ -1390,7 +1390,7 @@ _wrap_gtk_editable_insert_text(PyGObject *self, PyObject *args,
                                      kwlist, &text, &len, &position))
         return NULL;
     gtk_editable_insert_text(GTK_EDITABLE(self->obj), text, len, &position);
-    return PyInt_FromLong(position);
+    return PyLong_FromLong(position);
 }
 %%
 override gtk_editable_get_selection_bounds noargs
@@ -1487,8 +1487,8 @@ _wrap_gtk_item_factory_create_items(PyGObject *self, PyObject *args,
         }
 
         if (extra_data != NULL) {
-            if (PyString_Check(extra_data)) {
-                ent.extra_data = PyString_AsString(extra_data);
+            if (PyUnicode_Check(extra_data)) {
+                ent.extra_data = PyUnicode_AsUTF8(extra_data);
             } else if (pygobject_check(extra_data, &PyGdkPixbuf_Type)) {
 		/* create_items actually expects inline image data 
 		 * so let's create it for the user from the pixbuf
@@ -1595,8 +1595,6 @@ _wrap_gtk_menu_popup(PyGObject *self, PyObject *args, PyObject *kwargs)
 	time = PyLong_AsUnsignedLong(pytime);
 	if (PyErr_Occurred())
 	    return NULL;
-    } else if (PyInt_Check(pytime)) {
-	time = PyInt_AsLong(pytime);
     } else {
         PyErr_SetString(PyExc_TypeError,
                         "last argument must be int or long");
@@ -2101,8 +2099,8 @@ _wrap_gtk_requisition_getitem(PyGBoxed *self, Py_ssize_t pos)
     }
     requisition = pyg_boxed_get(self, GtkRequisition);
     switch (pos) {
-    case 0: return PyInt_FromLong(requisition->width);
-    case 1: return PyInt_FromLong(requisition->height);
+    case 0: return PyLong_FromLong(requisition->width);
+    case 1: return PyLong_FromLong(requisition->height);
     default:
         g_assert_not_reached();
         return NULL;
@@ -2120,7 +2118,7 @@ _wrap_gtk_requisition_setitem(PyGBoxed *self, Py_ssize_t pos, PyObject *value)
         return -1;
     }
     requisition = pyg_boxed_get(self, GtkRequisition);
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     switch(pos) {
@@ -2148,7 +2146,7 @@ _wrap_gtk_requisition__set_width(PyGBoxed *self, PyObject *value, void *closure)
 {
     gint val;
 
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     pyg_boxed_get(self, GtkRequisition)->width = val;
@@ -2161,7 +2159,7 @@ _wrap_gtk_requisition__set_height(PyGBoxed *self, PyObject *value, void *closure
 {
     gint val;
 
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     pyg_boxed_get(self, GtkRequisition)->height = val;
@@ -2445,7 +2443,7 @@ _wrap_gtk_drag_dest_find_target(PyGObject *self, PyObject *args,
     gtk_target_list_unref(target_list);
 
     name = gdk_atom_name(atom);
-    ret = PyString_FromString(name);
+    ret = PyUnicode_FromString(name);
     g_free(name);
     return ret;
 }
@@ -2700,7 +2698,7 @@ _wrap_gtk_dialog_new_with_buttons(PyGObject *self, PyObject *args,
     for (i = 0; i < len; i += 2) {
         PyObject *text = PyTuple_GetItem(py_buttons, i);
         PyObject *id = PyTuple_GetItem(py_buttons, i + 1);
-        if (!PyString_Check(text)) {
+        if (!PyUnicode_Check(text)) {
             gtk_object_destroy(GTK_OBJECT(self->obj));
             self->obj = NULL;
             PyErr_SetString(PyExc_RuntimeError,
@@ -2708,7 +2706,7 @@ _wrap_gtk_dialog_new_with_buttons(PyGObject *self, PyObject *args,
                             "must be a string");
             return -1;
         }
-        if (!PyInt_Check(id)) {
+        if (!PyLong_Check(id)) {
             gtk_object_destroy(GTK_OBJECT(self->obj));
             self->obj = NULL;
             PyErr_SetString(PyExc_RuntimeError,
@@ -2716,8 +2714,8 @@ _wrap_gtk_dialog_new_with_buttons(PyGObject *self, PyObject *args,
                             "must be a number");
             return -1;
         }
-        gtk_dialog_add_button(GTK_DIALOG(self->obj), PyString_AsString(text),
-                              PyInt_AsLong(id));
+        gtk_dialog_add_button(GTK_DIALOG(self->obj), PyUnicode_AsUTF8(text),
+                              PyLong_AsLong(id));
     }
     
     return 0;
@@ -2734,7 +2732,7 @@ _wrap_gtk_dialog_run(PyGObject *self)
     pyg_begin_allow_threads;
     retval = gtk_dialog_run(GTK_DIALOG(self->obj));
     pyg_end_allow_threads;
-    return PyInt_FromLong(retval);
+    return PyLong_FromLong(retval);
 }
 %%
 override gtk_dialog_add_buttons
@@ -2920,7 +2918,7 @@ _wrap_gtk_rc_set_default_files(PyGObject *self, PyObject *args,
     for (i = 0; i < n_files; i++) {
         PyObject *item = PySequence_GetItem(py_filenames, i);
         Py_DECREF(item); /* PySequence_GetItem INCREF's */
-        filenames[i] = PyString_AsString(item);
+        filenames[i] = PyUnicode_AsUTF8(item);
     }
     filenames[n_files] = NULL;
 
@@ -2948,7 +2946,7 @@ _wrap_gtk_rc_get_default_files(PyGObject *self)
 
     ret = PyTuple_New(i);
     for (j = 0; j < i; j++)
-        PyTuple_SetItem(ret, j, PyString_FromString(filenames[j]));
+        PyTuple_SetItem(ret, j, PyUnicode_FromString(filenames[j]));
 
     return ret;
 }
@@ -2993,7 +2991,7 @@ _wrap_gtk_icon_set_get_sizes(PyGObject *self)
 
     ret = PyTuple_New(n_sizes);
     for (i = 0; i < n_sizes; i++)
-        PyTuple_SetItem(ret, i, PyInt_FromLong(sizes[i]));
+        PyTuple_SetItem(ret, i, PyLong_FromLong(sizes[i]));
     g_free(sizes);
 
     return ret;
@@ -3060,7 +3058,7 @@ _wrap_gtk_stock_list_ids(PyGObject *self)
 
     list = PyList_New(g_slist_length(ids));
     for (; ids; ids = ids->next, i++) {
-        PyList_SetItem(list, i, PyString_FromString(ids->data));
+        PyList_SetItem(list, i, PyUnicode_FromString(ids->data));
         g_free(ids->data);
     }
     g_slist_free(ids);
@@ -3374,7 +3372,7 @@ _wrap_gtk_file_selection_get_selections(PyGObject *self)
 
     ret = PyTuple_New(size);
     for (i = 0; i < size; i++)
-        PyTuple_SetItem(ret, i, PyString_FromString(filenames[i]));
+        PyTuple_SetItem(ret, i, PyUnicode_FromString(filenames[i]));
 
     return ret;
 }
@@ -3454,7 +3452,7 @@ _wrap_gtk_image_get_stock(PyGObject *self)
 
     if (stock_id) {
 	return Py_BuildValue("(NN)",
-			     PyString_FromString(stock_id),
+			     PyUnicode_FromString(stock_id),
 			     pyg_enum_from_gtype(GTK_TYPE_ICON_SIZE, size));
     } else {
 	Py_INCREF(Py_None);
@@ -3823,7 +3821,7 @@ _wrap_gtk_color_selection_palette_to_string(PyGObject *self, PyObject *args,
     }
 
     str = gtk_color_selection_palette_to_string(colors, n_colors);
-    ret = PyString_FromString(str);
+    ret = PyUnicode_FromString(str);
     g_free(colors);
     g_free(str);
     Py_DECREF(py_colors);
@@ -3960,7 +3958,7 @@ _wrap_gtk_file_chooser_dialog_new(PyGObject *self,
   for (i = 0; i < len; i += 2) {
         PyObject *text = PyTuple_GetItem(py_buttons, i);
         PyObject *id = PyTuple_GetItem(py_buttons, i + 1);
-        if (!PyString_Check(text)) {
+        if (!PyUnicode_Check(text)) {
             gtk_object_destroy(GTK_OBJECT(self->obj));
             self->obj = NULL;
             PyErr_SetString(PyExc_RuntimeError,
@@ -3968,7 +3966,7 @@ _wrap_gtk_file_chooser_dialog_new(PyGObject *self,
                             "must be a string");
             return -1;
         }
-        if (!PyInt_Check(id)) {
+        if (!PyLong_Check(id)) {
             gtk_object_destroy(GTK_OBJECT(self->obj));
             self->obj = NULL;
             PyErr_SetString(PyExc_RuntimeError,
@@ -3976,8 +3974,8 @@ _wrap_gtk_file_chooser_dialog_new(PyGObject *self,
                             "must be a number");
             return -1;
         }
-        gtk_dialog_add_button(GTK_DIALOG(self->obj), PyString_AsString(text),
-                              PyInt_AsLong(id));
+        gtk_dialog_add_button(GTK_DIALOG(self->obj), PyUnicode_AsUTF8(text),
+                              PyLong_AsLong(id));
     }
     g_object_ref(self->obj); /* we don't own the first reference of windows */
     
@@ -4286,7 +4284,7 @@ _wrap_gtk_ui_manager_add_ui_from_string(PyGObject *self, PyObject *args, PyObjec
 					    buffer, length, &error);
     if (pyg_error_check(&error))
         return NULL;
-    return PyInt_FromLong(ret);
+    return PyLong_FromLong(ret);
 }
 %%
 override gtk_action_group_list_actions noargs
@@ -4458,9 +4456,9 @@ _wrap_gtk_cell_layout_set_attributes(PyGObject *self, PyObject *args,
     gtk_cell_layout_clear_attributes(GTK_CELL_LAYOUT(self->obj), cell);
     if (kwargs) {
         while (PyDict_Next(kwargs, &i, &key, &item)) {
-            gchar *attr = PyString_AsString(key);
+            gchar *attr = PyUnicode_AsUTF8(key);
 
-            if (!PyInt_Check(item)) {
+            if (!PyLong_Check(item)) {
                 gchar err[128];
                 g_snprintf(err, sizeof(err),
                            "%s must be an integer column number", attr);
@@ -4468,7 +4466,7 @@ _wrap_gtk_cell_layout_set_attributes(PyGObject *self, PyObject *args,
                 return NULL;
             }
             gtk_cell_layout_add_attribute(GTK_CELL_LAYOUT(self->obj),
-					  cell, attr, PyInt_AsLong(item));
+					  cell, attr, PyLong_AsLong(item));
         }
     }
     Py_INCREF(Py_None);
@@ -4595,7 +4593,7 @@ _wrap_gtk_file_chooser_get_filenames(PyGObject *self)
         return NULL;
 
     for (i = 0, tmp = slist; i < slen && tmp != NULL; tmp = tmp->next, i++) {
-        PyObject *obj = PyString_FromString((char *)tmp->data);
+        PyObject *obj = PyUnicode_FromString((char *)tmp->data);
         if (obj == NULL) {
 	    g_slist_foreach(slist, (GFunc)g_free, NULL);
 	    g_slist_free(slist);
@@ -4623,7 +4621,7 @@ _wrap_gtk_file_chooser_get_uris(PyGObject *self)
         return NULL;
 
     for (i = 0, tmp = slist; i < slen && tmp != NULL; tmp = tmp->next, i++) {
-        PyObject *obj = PyString_FromString((char *)tmp->data);
+        PyObject *obj = PyUnicode_FromString((char *)tmp->data);
         if (obj == NULL) {
 	    g_slist_foreach(slist, (GFunc)g_free, NULL);
 	    g_slist_free(slist);
@@ -4678,7 +4676,7 @@ _wrap_gtk_file_chooser_list_shortcut_folder_uris(PyGObject *self)
         return NULL;
 
     for (i = 0, tmp = slist; i < slen && tmp != NULL; tmp = tmp->next, i++) {
-        PyObject *obj = PyString_FromString((char *)tmp->data);
+        PyObject *obj = PyUnicode_FromString((char *)tmp->data);
         if (obj == NULL) {
 	    g_slist_foreach(slist, (GFunc)g_free, NULL);
 	    g_slist_free(slist);
@@ -4706,7 +4704,7 @@ _wrap_gtk_file_chooser_list_shortcut_folders(PyGObject *self)
         return NULL;
 
     for (i = 0, tmp = slist; i < slen && tmp != NULL; tmp = tmp->next, i++) {
-        PyObject *obj = PyString_FromString((char *)tmp->data);
+        PyObject *obj = PyUnicode_FromString((char *)tmp->data);
         if (obj == NULL) {
 	    g_slist_foreach(slist, (GFunc)g_free, NULL);
 	    g_slist_free(slist);
@@ -4776,27 +4774,27 @@ _wrap_gtk_file_filter_filter(PyGObject *self, PyObject *args,
     }
 
     if ((obj = PyTuple_GetItem(py_filter_info, 0)) != Py_None) {
-	if (!PyString_Check(obj))
+	if (!PyUnicode_Check(obj))
 	    goto error;
-	filter_info.filename = PyString_AsString(obj);
+	filter_info.filename = PyUnicode_AsUTF8(obj);
 	filter_info.contains |= GTK_FILE_FILTER_FILENAME;
     }
     if ((obj = PyTuple_GetItem(py_filter_info, 1)) != Py_None) {
-	if (!PyString_Check(obj))
+	if (!PyUnicode_Check(obj))
 	    goto error;
-	filter_info.uri = PyString_AsString(obj);
+	filter_info.uri = PyUnicode_AsUTF8(obj);
 	filter_info.contains |= GTK_FILE_FILTER_URI;
     }
     if ((obj = PyTuple_GetItem(py_filter_info, 2)) != Py_None) {
-	if (!PyString_Check(obj))
+	if (!PyUnicode_Check(obj))
 	    goto error;
-	filter_info.display_name = PyString_AsString(obj);
+	filter_info.display_name = PyUnicode_AsUTF8(obj);
 	filter_info.contains |= GTK_FILE_FILTER_DISPLAY_NAME;
     }
     if ((obj = PyTuple_GetItem(py_filter_info, 3)) != Py_None) {
-	if (!PyString_Check(obj))
+	if (!PyUnicode_Check(obj))
 	    goto error;
-	filter_info.mime_type = PyString_AsString(obj);
+	filter_info.mime_type = PyUnicode_AsUTF8(obj);
 	filter_info.contains |= GTK_FILE_FILTER_MIME_TYPE;
     }
 
@@ -4829,7 +4827,7 @@ pygtk_file_filter_add_custom_cb(const GtkFileFilterInfo *filter_info,
 
     if (filter_info->filename
 	&& (filter_info->contains & GTK_FILE_FILTER_FILENAME)) {
-	py_obj = PyString_FromString(filter_info->filename);
+	py_obj = PyUnicode_FromString(filter_info->filename);
     } else {
 	Py_INCREF(Py_None);
 	py_obj = Py_None;
@@ -4837,7 +4835,7 @@ pygtk_file_filter_add_custom_cb(const GtkFileFilterInfo *filter_info,
     PyTuple_SetItem(py_filter_info, 0, py_obj);
     if (filter_info->uri
 	&& (filter_info->contains & GTK_FILE_FILTER_URI)) {
-	py_obj = PyString_FromString(filter_info->uri);
+	py_obj = PyUnicode_FromString(filter_info->uri);
     } else {
 	Py_INCREF(Py_None);
 	py_obj = Py_None;
@@ -4845,7 +4843,7 @@ pygtk_file_filter_add_custom_cb(const GtkFileFilterInfo *filter_info,
     PyTuple_SetItem(py_filter_info, 1, py_obj);
     if (filter_info->display_name
 	&& (filter_info->contains & GTK_FILE_FILTER_DISPLAY_NAME)) {
-	py_obj = PyString_FromString(filter_info->display_name);
+	py_obj = PyUnicode_FromString(filter_info->display_name);
     } else {
 	Py_INCREF(Py_None);
 	py_obj = Py_None;
@@ -4853,7 +4851,7 @@ pygtk_file_filter_add_custom_cb(const GtkFileFilterInfo *filter_info,
     PyTuple_SetItem(py_filter_info, 2, py_obj);
     if (filter_info->mime_type
 	&& (filter_info->contains & GTK_FILE_FILTER_MIME_TYPE)) {
-	py_obj = PyString_FromString(filter_info->mime_type);
+	py_obj = PyUnicode_FromString(filter_info->mime_type);
     } else {
 	Py_INCREF(Py_None);
 	py_obj = Py_None;
@@ -4984,7 +4982,7 @@ _wrap_gtk_clipboard_wait_for_targets(PyGObject *self)
                 gchar *name;
 
                 name = gdk_atom_name(targets[i]);
-		PyTuple_SetItem(ret, i, PyString_FromString(name));
+		PyTuple_SetItem(ret, i, PyUnicode_FromString(name));
                 g_free(name);
             }
 	    g_free(targets);
@@ -5062,7 +5060,7 @@ clipboard_request_text_cb(GtkClipboard *clipboard,
     data = (PyObject *) user_data;
 
     if (text) {
-        py_text = PyString_FromString(text);
+        py_text = PyUnicode_FromString(text);
     } else {
         py_text = Py_None;
         Py_INCREF(Py_None);
@@ -5126,7 +5124,7 @@ clipboard_request_targets_cb(GtkClipboard *clipboard,
             gchar *name;
 
             name = gdk_atom_name(atoms[i]);
-            PyTuple_SetItem(py_atoms, i, PyString_FromString(name));
+            PyTuple_SetItem(py_atoms, i, PyUnicode_FromString(name));
             g_free(name);
         }
     } else
@@ -5221,13 +5219,13 @@ _wrap_gtk_icon_theme_set_search_path(PyGObject *self, PyObject *args,
     paths = g_new(gchar *, len);
     for (i = 0; i < len; i++) {
 	PyObject *py_path = PySequence_GetItem(py_seq, i);
-	if (!PyString_Check(py_path)) {
+	if (!PyUnicode_Check(py_path)) {
 	    PyErr_SetString(PyExc_ValueError, "path items must be strings");
 	    Py_DECREF(py_path);
 	    g_free(paths);
 	    return NULL;
 	}
-	paths[i] = PyString_AsString(py_path);
+	paths[i] = PyUnicode_AsUTF8(py_path);
 	Py_DECREF(py_path);
     }
 
@@ -5253,7 +5251,7 @@ _wrap_gtk_icon_theme_get_search_path(PyGObject *self)
 
     py_tuple = PyTuple_New(n_items);
     for (i = 0; i < n_items; i++)
-	PyTuple_SetItem(py_tuple, i, PyString_FromString(paths[i]));
+	PyTuple_SetItem(py_tuple, i, PyUnicode_FromString(paths[i]));
 
     g_strfreev(paths);
 
@@ -5285,7 +5283,7 @@ _wrap_gtk_icon_theme_list_icons(PyGObject *self, PyObject *args,
     for (i = 0; i < len; i++) {
 	char *name = (char *)g_list_nth_data(icons, i);
 
-	PyTuple_SetItem(py_icons, i, PyString_FromString(name));
+	PyTuple_SetItem(py_icons, i, PyUnicode_FromString(name));
     }
     g_list_foreach(icons, (GFunc)g_free, NULL);
     g_list_free(icons);
@@ -5433,7 +5431,7 @@ _wrap_gtk_menu_item_toggle_size_request(PyGObject *self)
 
     gtk_menu_item_toggle_size_request(GTK_MENU_ITEM(self->obj), &requisition);
 
-    return PyInt_FromLong(requisition);
+    return PyLong_FromLong(requisition);
 }
 %%
 override gtk_entry_new kwargs
@@ -5658,7 +5656,7 @@ _wrap_gtk_about_dialog_set_authors(PyGObject *self, PyObject *args,
     for (i = 0; i < n_authors; i++) {
         PyObject *item = PySequence_GetItem(py_authors, i);
         Py_DECREF(item); /* PySequence_GetItem INCREF's */
-        authors[i] = PyString_AsString(item);
+        authors[i] = PyUnicode_AsUTF8(item);
     }
     authors[n_authors] = NULL;
 
@@ -5689,7 +5687,7 @@ _wrap_gtk_about_dialog_get_authors(PyGObject *self)
 
     ret = PyTuple_New(i);
     for (j = 0; j < i; j++)
-        PyTuple_SetItem(ret, j, PyString_FromString(authors[j]));
+        PyTuple_SetItem(ret, j, PyUnicode_FromString(authors[j]));
 
     return ret;
 }
@@ -5719,7 +5717,7 @@ _wrap_gtk_about_dialog_set_documenters(PyGObject *self, PyObject *args,
     for (i = 0; i < n_documenters; i++) {
         PyObject *item = PySequence_GetItem(py_documenters, i);
         Py_DECREF(item); /* PySequence_GetItem INCREF's */
-        documenters[i] = PyString_AsString(item);
+        documenters[i] = PyUnicode_AsUTF8(item);
     }
     documenters[n_documenters] = NULL;
 
@@ -5750,7 +5748,7 @@ _wrap_gtk_about_dialog_get_documenters(PyGObject *self)
 
     ret = PyTuple_New(i);
     for (j = 0; j < i; j++)
-        PyTuple_SetItem(ret, j, PyString_FromString(documenters[j]));
+        PyTuple_SetItem(ret, j, PyUnicode_FromString(documenters[j]));
 
     return ret;
 }
@@ -5780,7 +5778,7 @@ _wrap_gtk_about_dialog_set_artists(PyGObject *self, PyObject *args,
     for (i = 0; i < n_artists; i++) {
         PyObject *item = PySequence_GetItem(py_artists, i);
         Py_DECREF(item); /* PySequence_GetItem INCREF's */
-        artists[i] = PyString_AsString(item);
+        artists[i] = PyUnicode_AsUTF8(item);
     }
     artists[n_artists] = NULL;
 
@@ -5811,7 +5809,7 @@ _wrap_gtk_about_dialog_get_artists(PyGObject *self)
 
     ret = PyTuple_New(i);
     for (j = 0; j < i; j++)
-        PyTuple_SetItem(ret, j, PyString_FromString(artists[j]));
+        PyTuple_SetItem(ret, j, PyUnicode_FromString(artists[j]));
 
     return ret;
 }
@@ -5848,7 +5846,7 @@ _wrap_gtk_show_about_dialog(PyGObject *self, PyObject *args, PyObject *kwargs)
             const gchar *property_name;
             GValue property_gvalue = { 0, };
 
-            property_name = PyString_AsString (py_prop_name);
+            property_name = PyUnicode_AsUTF8 (py_prop_name);
 
             klass = G_OBJECT_CLASS (GTK_ABOUT_DIALOG_GET_CLASS(dialog));
 
@@ -5918,7 +5916,7 @@ _wrap_gtk_selection_data_set_uris(PyGBoxed *self, PyObject *args,
     for (i = 0; i < n_uris; i++) {
         PyObject *item = PySequence_GetItem(py_uris, i);
         Py_DECREF(item); /* PySequence_GetItem INCREF's */
-        uris[i] = PyString_AsString(item);
+        uris[i] = PyUnicode_AsUTF8(item);
     }
     uris[n_uris] = NULL;
 
@@ -5948,7 +5946,7 @@ _wrap_gtk_selection_data_get_uris(PyGBoxed *self)
 
     ret = PyTuple_New(i);
     for (j = 0; j < i; j++)
-        PyTuple_SetItem(ret, j, PyString_FromString(uris[j]));
+        PyTuple_SetItem(ret, j, PyUnicode_FromString(uris[j]));
 
     return ret;
 }
@@ -6058,7 +6056,7 @@ _wrap_gtk_cell_view_set_values(PyGObject *self, PyObject *args,
     view = GTK_CELL_VIEW(self->obj);
     renderer = GTK_CELL_RENDERER(pygobject_get(pyrenderer));
     while (PyDict_Next(kwargs, &i, &key, &item)) {
-        property = PyString_AsString(key);
+        property = PyUnicode_AsUTF8(key);
         pspec = g_object_class_find_property(G_OBJECT_GET_CLASS(renderer),
                                              property);
         if (!pspec) {
@@ -6314,7 +6312,7 @@ _wrap_gtk_icon_theme_get_icon_sizes(PyGObject *self, PyObject *args,
         return NULL;
     }
     for (i = 0; sizes[i] != 0; i++)
-        PyTuple_SET_ITEM(py_sizes, i, PyInt_FromLong(sizes[i]));
+        PyTuple_SET_ITEM(py_sizes, i, PyLong_FromLong(sizes[i]));
 
     g_free(sizes);
     return py_sizes;
@@ -6665,9 +6663,9 @@ typedef struct {
 } PyGtkCellLayoutDataFuncData;
 
 static void
-_wrap_GtkCellLayoutDataFunc_destroy(void *arg)
+_wrap_GtkCellLayoutDataFunc_destroy(PyObject *arg)
 {
-    PyGtkCellLayoutDataFuncData *data = arg;
+    PyGtkCellLayoutDataFuncData *data = PyCapsule_GetPointer(arg, NULL);
     data->destroy(data->func_data);
     g_free(data);
 }
@@ -6687,14 +6685,14 @@ _wrap_GtkCellLayoutDataFunc(PyObject *self, PyObject *args)
                           &PyGtkCellRenderer_Type, &py_cell,
                           &PyGtkTreeModel_Type, &py_tree_model,
                           &py_iter,
-                          &PyCObject_Type, &py_data))
+                          &PyCapsule_Type, &py_data))
         return NULL;
     if (!pyg_boxed_check(py_iter, GTK_TYPE_TREE_ITER)) {
         PyErr_SetString(PyExc_TypeError, "4th argument must be a gtk.TreeIter");
         return NULL;
     }
 
-    data = PyCObject_AsVoidPtr(py_data);
+    data = PyCapsule_GetPointer(py_data, NULL);
     data->func(GTK_CELL_LAYOUT(pygobject_get(py_cell_layout)),
                GTK_CELL_RENDERER(pygobject_get(py_cell)),
                GTK_TREE_MODEL(pygobject_get(py_tree_model)),
@@ -6726,7 +6724,7 @@ _wrap_GtkCellLayout__proxy_do_set_cell_data_func (
     data->func = func;
     data->func_data = func_data;
     data->destroy = destroy;
-    py_func_data = PyCObject_FromVoidPtr(data, _wrap_GtkCellLayoutDataFunc_destroy);
+    py_func_data = PyCapsule_New(data, NULL, _wrap_GtkCellLayoutDataFunc_destroy);
 
     py_ret = PyObject_CallMethod(self, "do_set_cell_data_func", "NNNN",
                                  self, py_cell, py_func, py_func_data);
@@ -6763,14 +6761,14 @@ _wrap_gtk_dialog_set_alternative_button_order(PyGObject *self, PyObject *args,
     for (i = 0; i < n_params; i++) {
         PyObject *item = PySequence_GetItem(py_new_order, i);
 
-        if (!PyInt_Check(item)) {
+        if (!PyLong_Check(item)) {
             PyErr_SetString(PyExc_TypeError,
                             "each new_order item must be an integer");
             g_free(new_order);
             Py_XDECREF(item);
             return NULL;
         }
-        new_order[i] = PyInt_AsLong(item);
+        new_order[i] = PyLong_AsLong(item);
         Py_DECREF(item);
     }
     gtk_dialog_set_alternative_button_order_from_array(GTK_DIALOG(self->obj),
@@ -6929,7 +6927,7 @@ pygtk_assistant_set_forward_page_func_cb(gint current_page,
     }
 
     if (retobj != NULL) {
-        ret = PyInt_AsLong(retobj);
+        ret = PyLong_AsLong(retobj);
         Py_DECREF(retobj);
     } else {
         PyErr_Print();
@@ -6991,14 +6989,14 @@ clipboard_request_rich_text_cb(GtkClipboard *clipboard,
     data = (PyObject *) user_data;
 
     if (text) {
-        py_text = PyString_FromString((char *) text);
+        py_text = PyUnicode_FromString((char *) text);
     } else {
         py_text = Py_None;
         Py_INCREF(Py_None);
     }
 
     name = gdk_atom_name(format);
-    py_format = PyString_FromString(name);
+    py_format = PyUnicode_FromString(name);
     g_free(name);
  
     state = pyg_gil_state_ensure();
@@ -7298,7 +7296,7 @@ _wrap_gtk_recent_chooser_get_uris(PyGObject *self)
         length = 0;
     py_uris = PyList_New(length);
     for (i = 0; i < length; i++)
-        PyList_SetItem(py_uris, i, PyString_FromString(uris[i]));
+        PyList_SetItem(py_uris, i, PyUnicode_FromString(uris[i]));
     g_strfreev(uris);
 
     return py_uris;
@@ -7372,7 +7370,7 @@ _wrap_gtk_recent_chooser_dialog_new(PyGObject *self, PyObject *args,
   for (i = 0; i < len; i += 2) {
       PyObject *text = PySequence_GetItem(py_buttons, i);
       PyObject *id = PySequence_GetItem(py_buttons, i + 1);
-      if (!PyString_Check(text)) {
+      if (!PyUnicode_Check(text)) {
           gtk_object_destroy(GTK_OBJECT(self->obj));
           self->obj = NULL;
           PyErr_SetString(PyExc_RuntimeError,
@@ -7382,7 +7380,7 @@ _wrap_gtk_recent_chooser_dialog_new(PyGObject *self, PyObject *args,
           Py_DECREF(id);
           return -1;
       }
-      if (!PyInt_Check(id)) {
+      if (!PyLong_Check(id)) {
           gtk_object_destroy(GTK_OBJECT(self->obj));
           self->obj = NULL;
           PyErr_SetString(PyExc_RuntimeError,
@@ -7392,8 +7390,8 @@ _wrap_gtk_recent_chooser_dialog_new(PyGObject *self, PyObject *args,
           Py_DECREF(id);
           return -1;
       }
-      gtk_dialog_add_button(GTK_DIALOG(self->obj), PyString_AsString(text),
-                            PyInt_AsLong(id));
+      gtk_dialog_add_button(GTK_DIALOG(self->obj), PyUnicode_AsUTF8(text),
+                            PyLong_AsLong(id));
       Py_DECREF(text);
       Py_DECREF(id);
   }
@@ -7449,7 +7447,7 @@ pygtk_recent_chooser_set_sort_func_cb(GtkRecentInfo *a,
     }
 
     if (retobj != NULL) {
-        ret = PyInt_AsLong(retobj);
+        ret = PyLong_AsLong(retobj);
         Py_DECREF(retobj);
     } else {
         PyErr_Print();
@@ -7504,7 +7502,7 @@ _wrap_gtk_recent_info_get_applications(PyGObject *self)
         length = 0;
     py_apps = PyList_New(length);
     for (i = 0; i < length; i++)
-        PyList_SetItem(py_apps, i, PyString_FromString(apps[i]));
+        PyList_SetItem(py_apps, i, PyUnicode_FromString(apps[i]));
     g_strfreev(apps);
 
     return py_apps;
@@ -7524,7 +7522,7 @@ _wrap_gtk_recent_info_get_groups(PyGObject *self)
         length = 0;
     py_groups = PyList_New(length);
     for (i = 0; i < length; i++)
-        PyList_SetItem(py_groups, i, PyString_FromString(groups[i]));
+        PyList_SetItem(py_groups, i, PyUnicode_FromString(groups[i]));
     g_strfreev(groups);
 
     return py_groups;
@@ -7599,22 +7597,22 @@ pygtk_recent_filter_add_custom_cb(const GtkRecentFilterInfo *info,
     py_info = PyDict_New();
 
     if (info->contains & GTK_RECENT_FILTER_URI)
-        PyDict_SetItemString(py_info, "uri", PyString_FromString(info->uri));
+        PyDict_SetItemString(py_info, "uri", PyUnicode_FromString(info->uri));
 
     if (info->contains & GTK_RECENT_FILTER_DISPLAY_NAME)
         PyDict_SetItemString(py_info, "display_name",
-                             PyString_FromString(info->display_name));
+                             PyUnicode_FromString(info->display_name));
 
     if (info->contains & GTK_RECENT_FILTER_MIME_TYPE)
         PyDict_SetItemString(py_info, "mime_type",
-                             PyString_FromString(info->mime_type));
+                             PyUnicode_FromString(info->mime_type));
 
     if (info->contains & GTK_RECENT_FILTER_APPLICATION) {
         gchar **apps = (gchar **)info->applications;
         PyObject *applications = PyList_New(0);
         if (apps) {
             while (*apps) {
-                PyList_Append(applications, PyString_FromString(*apps));
+                PyList_Append(applications, PyUnicode_FromString(*apps));
                 apps++;
             }
         }
@@ -7626,7 +7624,7 @@ pygtk_recent_filter_add_custom_cb(const GtkRecentFilterInfo *info,
         PyObject *groups = PyList_New(0);
         if (grps) {
             while (*grps) {
-                PyList_Append(groups, PyString_FromString(*grps));
+                PyList_Append(groups, PyUnicode_FromString(*grps));
                 grps++;
             }
         }
@@ -7634,7 +7632,7 @@ pygtk_recent_filter_add_custom_cb(const GtkRecentFilterInfo *info,
     }
 
     if (info->contains & GTK_RECENT_FILTER_AGE)
-        PyDict_SetItemString(py_info, "age", PyInt_FromLong(info->age));
+        PyDict_SetItemString(py_info, "age", PyLong_FromLong(info->age));
     
     if (cunote->data) {
         retobj = PyEval_CallFunction(cunote->func, "(NO)", py_info,
@@ -7644,7 +7642,7 @@ pygtk_recent_filter_add_custom_cb(const GtkRecentFilterInfo *info,
     }
 
     if (retobj != NULL) {
-        ret = PyInt_AsLong(retobj);
+        ret = PyLong_AsLong(retobj);
         Py_DECREF(retobj);
     } else {
         PyErr_Print();
@@ -7710,36 +7708,36 @@ _wrap_gtk_recent_filter_filter(PyGObject *self, PyObject *args,
     }
 
     if ((item = PyDict_GetItemString(py_info, "uri"))) {
-        if (!PyString_Check(item)) {
+        if (!PyUnicode_Check(item)) {
             PyErr_SetString(PyExc_TypeError,
                             "filter_info uri must be a string");
             return NULL;
         }
-        info.uri = PyString_AsString(item);
+        info.uri = PyUnicode_AsUTF8(item);
         info.contains |= GTK_RECENT_FILTER_URI;
     } else {
         info.uri = NULL;
     }
 
     if ((item = PyDict_GetItemString(py_info, "mime_type"))) {
-        if (!PyString_Check(item)) {
+        if (!PyUnicode_Check(item)) {
             PyErr_SetString(PyExc_TypeError,
                             "filter_info mime_type must be a string");
             return NULL;
         }
-        info.mime_type = PyString_AsString(item);
+        info.mime_type = PyUnicode_AsUTF8(item);
         info.contains |= GTK_RECENT_FILTER_MIME_TYPE;
     } else {
         info.mime_type = NULL;
     }
 
     if ((item = PyDict_GetItemString(py_info, "display_name"))) {
-        if (!PyString_Check(item)) {
+        if (!PyUnicode_Check(item)) {
             PyErr_SetString(PyExc_TypeError,
                             "filter_info display_name must be a string");
             return NULL;
         }
-        info.display_name = PyString_AsString(item);
+        info.display_name = PyUnicode_AsUTF8(item);
         info.contains |= GTK_RECENT_FILTER_DISPLAY_NAME;
     } else {
         info.display_name = NULL;
@@ -7756,12 +7754,12 @@ _wrap_gtk_recent_filter_filter(PyGObject *self, PyObject *args,
         info.applications = (const gchar**)g_new0(gchar*, size + 1);
         for (i = 0; i < size; i++) {
             PyObject *app = PySequence_GetItem(item, i);
-            if (!PyString_Check(app)) {
+            if (!PyUnicode_Check(app)) {
                 PyErr_SetString(PyExc_TypeError,
                                 "filter_info applications must be a sequence of strings");
                 return NULL;
             }
-            info.applications[i] = PyString_AsString(app);
+            info.applications[i] = PyUnicode_AsUTF8(app);
             Py_DECREF(app);
         }
         info.contains |= GTK_RECENT_FILTER_APPLICATION;
@@ -7780,12 +7778,12 @@ _wrap_gtk_recent_filter_filter(PyGObject *self, PyObject *args,
         info.groups = (const gchar**)g_new0(gchar*, size + 1);
         for (i = 0; i < size; i++) {
             PyObject *grp = PySequence_GetItem(item, i);
-            if (!PyString_Check(grp)) {
+            if (!PyUnicode_Check(grp)) {
                 PyErr_SetString(PyExc_TypeError,
                                 "filter_info groups must be a sequence of strings");
                 return NULL;
             }
-            info.groups[i] = PyString_AsString(grp);
+            info.groups[i] = PyUnicode_AsUTF8(grp);
             Py_DECREF(grp);
         }
         info.contains |= GTK_RECENT_FILTER_GROUP;
@@ -7794,12 +7792,12 @@ _wrap_gtk_recent_filter_filter(PyGObject *self, PyObject *args,
     }
 
     if ((item = PyDict_GetItemString(py_info, "age"))) {
-        if (!PyInt_Check(item)) {
+        if (!PyLong_Check(item)) {
             PyErr_SetString(PyExc_TypeError,
                             "filter_info age must be an int");
             return NULL;
         }
-        info.age = PyInt_AsLong(item);
+        info.age = PyLong_AsLong(item);
         info.contains |= GTK_RECENT_FILTER_AGE;
     } else {
         info.age = -1;
@@ -7838,47 +7836,47 @@ _wrap_gtk_recent_manager_add_full(PyGObject *self, PyObject *args,
     }
 
     if (!(item = PyDict_GetItemString(py_data, "mime_type"))
-        || !PyString_Check(item)) {
+        || !PyUnicode_Check(item)) {
         PyErr_SetString(PyExc_RuntimeError,
                         "recent_data must reference a 'mime_type' string value");
         return NULL;
     }
-    recent_data.mime_type = PyString_AsString(item);
+    recent_data.mime_type = PyUnicode_AsUTF8(item);
 
     if (!(item = PyDict_GetItemString(py_data, "app_name"))
-        || !PyString_Check(item)) {
+        || !PyUnicode_Check(item)) {
         PyErr_SetString(PyExc_RuntimeError,
                         "recent_data must reference a 'app_name' string value");
         return NULL;
     }
-    recent_data.app_name = PyString_AsString(item);
+    recent_data.app_name = PyUnicode_AsUTF8(item);
 
     if (!(item = PyDict_GetItemString(py_data, "app_exec"))
-        || !PyString_Check(item)) {
+        || !PyUnicode_Check(item)) {
         PyErr_SetString(PyExc_RuntimeError,
                         "recent_data must reference a 'app_exec' string value");
         return NULL;
     }
-    recent_data.app_exec = PyString_AsString(item);
+    recent_data.app_exec = PyUnicode_AsUTF8(item);
 
     if ((item = PyDict_GetItemString(py_data, "display_name"))) {
-        if (!PyString_Check(item)) {
+        if (!PyUnicode_Check(item)) {
             PyErr_SetString(PyExc_TypeError,
                             "recent_data 'display_name' must reference a string");
             return NULL;
         }
-        recent_data.display_name = PyString_AsString(item);
+        recent_data.display_name = PyUnicode_AsUTF8(item);
     } else {
         recent_data.display_name = NULL;
     }
 
     if ((item = PyDict_GetItemString(py_data, "description"))) {
-        if (!PyString_Check(item)) {
+        if (!PyUnicode_Check(item)) {
             PyErr_SetString(PyExc_TypeError,
                             "recent_data 'description' must reference a string");
             return NULL;
         }
-        recent_data.description = PyString_AsString(item);
+        recent_data.description = PyUnicode_AsUTF8(item);
     } else {
         recent_data.description = NULL;
     }
@@ -7908,14 +7906,14 @@ _wrap_gtk_recent_manager_add_full(PyGObject *self, PyObject *args,
         recent_data.groups = (gchar**)g_new0(gchar*, size+1);
         for (i = 0; i < size; i++) {
             PyObject *group = PySequence_GetItem(item, i);
-            if (!PyString_Check(group)) {
+            if (!PyUnicode_Check(group)) {
                 PyErr_SetString(PyExc_TypeError,
                                 "recent_data 'groups' must reference a sequence of strings");
                 g_free(recent_data.groups);
                 Py_XDECREF(group);
                 return NULL;
             }
-            recent_data.groups[i] = PyString_AsString(group);
+            recent_data.groups[i] = PyUnicode_AsUTF8(group);
             Py_DECREF(group);
         }
     } else {
@@ -8259,7 +8257,7 @@ _wrap_GtkEditable__do_insert_text(PyObject *cls, PyObject *args, PyObject *kwarg
     }
     g_type_class_unref(klass);
     
-    return PyInt_FromLong(position);
+    return PyLong_FromLong(position);
 }
 
 %%
@@ -8291,7 +8289,7 @@ _wrap_GtkEditable__do_do_insert_text(PyObject *cls, PyObject *args, PyObject *kw
     }
     g_type_class_unref(klass);
     
-    return PyInt_FromLong(position);
+    return PyLong_FromLong(position);
 }
 
 %%
@@ -8508,12 +8506,12 @@ _wrap_gtk_scale_button_new(PyGObject *self, PyObject *args, PyObject *kwargs)
         icons = g_new(gchar *, len + 1);
         for (i = 0; i < len; i++) {
             PyObject *item = PySequence_GetItem(py_icons, i);
-            if (!PyString_Check(item)) {
+            if (!PyUnicode_Check(item)) {
                 PyErr_SetString(PyExc_TypeError, "icon must be a string");
                 g_free(icons);
                 return -1;
             }
-            icons[i] = PyString_AsString(item);
+            icons[i] = PyUnicode_AsUTF8(item);
             Py_DECREF(item);
         }
         icons[len] = NULL;
@@ -8558,12 +8556,12 @@ _wrap_gtk_scale_button_set_icons(PyGObject *self, PyObject *args, PyObject *kwar
     icons = g_new(gchar *, len + 1);
     for (i = 0; i < len; i++) {
         PyObject *item = PySequence_GetItem(py_icons, i);
-        if (!PyString_Check(item)) {
+        if (!PyUnicode_Check(item)) {
             PyErr_SetString(PyExc_TypeError, "icon must be a string");
             g_free(icons);
             return NULL;
         }
-        icons[i] = PyString_AsString(item);
+        icons[i] = PyUnicode_AsUTF8(item);
         Py_DECREF(item);
     }
     icons[len] = NULL;
@@ -8616,7 +8614,7 @@ _wrap_gtk_icon_theme_list_contexts(PyGObject *self)
     for (i = 0; i < len; i++) {
         char *name = (char *)g_list_nth_data(contexts, i);
 
-        PyTuple_SetItem(py_contexts, i, PyString_FromString(name));
+        PyTuple_SetItem(py_contexts, i, PyUnicode_FromString(name));
     }
     g_list_foreach(contexts, (GFunc)g_free, NULL);
     g_list_free(contexts);
@@ -8659,13 +8657,13 @@ _wrap_gtk_icon_theme_choose_icon(PyGObject *self, PyObject *args,
             g_free(icon_names);
             return NULL;
         }
-        if (!PyString_Check(item)) {
+        if (!PyUnicode_Check(item)) {
             PyErr_SetString(PyExc_TypeError, "icon must be a string");
             g_free(icon_names);
             Py_DECREF(item);
             return NULL;
         }
-        icon_names[i] = PyString_AsString(item);
+        icon_names[i] = PyUnicode_AsUTF8(item);
         Py_DECREF(item);
     }
     icon_names[len] = NULL;
@@ -8844,7 +8842,7 @@ _wrap_gtk_clipboard_wait_for_uris(PyGObject *self)
 
         ret = PyTuple_New(i);
         for (j = 0; j < i; j++)
-            PyTuple_SetItem(ret, j, PyString_FromString(uris[j]));
+            PyTuple_SetItem(ret, j, PyUnicode_FromString(uris[j]));
 
         g_strfreev(uris);
 

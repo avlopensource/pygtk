@@ -13,13 +13,13 @@ import gtk
   COLOR_RED,
   COLOR_GREEN,
   COLOR_BLUE
-) = range(3)
+) = list(range(3))
 
 (
   SHAPE_SQUARE,
   SHAPE_RECTANGLE,
   SHAPE_OVAL,
-) = range(3)
+) = list(range(3))
 
 ui_info = \
 '''<ui>
@@ -87,8 +87,8 @@ def register_stock_icons():
         icon_set = gtk.IconSet(transparent)
         factory.add('demo-gtk-logo', icon_set)
 
-    except gobject.GError, error:
-        print 'failed to load GTK logo for toolbar'
+    except gobject.GError as error:
+        print('failed to load GTK logo for toolbar')
 
 class ApplicationMainWindowDemo(gtk.Window):
     def __init__(self, parent=None):
@@ -111,8 +111,8 @@ class ApplicationMainWindowDemo(gtk.Window):
 
         try:
             mergeid = merge.add_ui_from_string(ui_info)
-        except gobject.GError, msg:
-            print "building menus failed: %s" % msg
+        except gobject.GError as msg:
+            print("building menus failed: %s" % msg)
         bar = merge.get_widget("/MenuBar")
         bar.show()
 

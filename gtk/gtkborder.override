@@ -59,10 +59,10 @@ _wrap_gtk_border_getitem(PyGBoxed *self, Py_ssize_t pos)
     }
     border = pyg_boxed_get(self, GtkBorder);
     switch (pos) {
-    case 0: return PyInt_FromLong(border->left);
-    case 1: return PyInt_FromLong(border->right);
-    case 2: return PyInt_FromLong(border->top);
-    case 3: return PyInt_FromLong(border->bottom);
+    case 0: return PyLong_FromLong(border->left);
+    case 1: return PyLong_FromLong(border->right);
+    case 2: return PyLong_FromLong(border->top);
+    case 3: return PyLong_FromLong(border->bottom);
     default:
         g_assert_not_reached();
         return NULL;
@@ -81,7 +81,7 @@ _wrap_gtk_border_setitem(PyGBoxed *self, Py_ssize_t pos, PyObject *value)
         return -1;
     }
     border = pyg_boxed_get(self, GtkBorder);
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     switch(pos) {
@@ -111,7 +111,7 @@ _wrap_gtk_border__set_left(PyGBoxed *self, PyObject *value, void *closure)
 {
     gint val;
 
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     pyg_boxed_get(self, GtkBorder)->left = val;
@@ -124,7 +124,7 @@ _wrap_gtk_border__set_right(PyGBoxed *self, PyObject *value, void *closure)
 {
     gint val;
 
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     pyg_boxed_get(self, GtkBorder)->right = val;
@@ -137,7 +137,7 @@ _wrap_gtk_border__set_top(PyGBoxed *self, PyObject *value, void *closure)
 {
     gint val;
 
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     pyg_boxed_get(self, GtkBorder)->top = val;
@@ -150,7 +150,7 @@ _wrap_gtk_border__set_bottom(PyGBoxed *self, PyObject *value, void *closure)
 {
     gint val;
 
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     pyg_boxed_get(self, GtkBorder)->bottom = val;

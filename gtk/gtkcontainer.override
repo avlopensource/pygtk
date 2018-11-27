@@ -299,13 +299,13 @@ _wrap_gtk_container_child_set(PyGObject *self, PyObject *args)
         GParamSpec *pspec;
         GValue value = { 0 };
 
-        if (!PyString_Check(py_property)) {
+        if (!PyUnicode_Check(py_property)) {
             PyErr_SetString(PyExc_TypeError,
                             "Expected string argument for property.");
             return NULL;
         }
 
-        property_name = PyString_AsString(py_property);
+        property_name = PyUnicode_AsUTF8(py_property);
 
         pspec = gtk_container_class_find_child_property(class, property_name);
         if (!pspec) {
@@ -372,13 +372,13 @@ _wrap_gtk_container_child_get(PyGObject *self, PyObject *args)
         GValue value = { 0 };
         PyObject *item;
 
-        if (!PyString_Check(py_property)) {
+        if (!PyUnicode_Check(py_property)) {
             PyErr_SetString(PyExc_TypeError,
                             "Expected string argument for property.");
             return NULL;
         }
 
-        property_name = PyString_AsString(py_property);
+        property_name = PyUnicode_AsUTF8(py_property);
 
         pspec = gtk_container_class_find_child_property(class, property_name);
         if (!pspec) {
@@ -446,13 +446,13 @@ _wrap_gtk_container_add_with_properties(PyGObject *self, PyObject *args)
         GParamSpec *pspec;
         GValue value = { 0 };
 
-        if (!PyString_Check(py_property)) {
+        if (!PyUnicode_Check(py_property)) {
             PyErr_SetString(PyExc_TypeError,
                             "Expected string argument for property.");
             return NULL;
         }
 
-        property_name = PyString_AsString(py_property);
+        property_name = PyUnicode_AsUTF8(py_property);
 
         pspec = gtk_container_class_find_child_property(class, property_name);
         if (!pspec) {
@@ -787,8 +787,7 @@ pygobject_container_iter_next(PyGContainerIter *iter)
 }
 
 static PyTypeObject PyGContainerIter_Type = {
-	PyObject_HEAD_INIT(NULL)
-	0,					/* ob_size */
+	PyVarObject_HEAD_INIT(NULL, 0)
 	"gobject.GContainerIter",		/* tp_name */
 	sizeof(PyGContainerIter),		/* tp_basicsize */
 	0,					/* tp_itemsize */
@@ -856,7 +855,6 @@ static PyNumberMethods _wrap_gtk_container_tp_as_number = {
     (binaryfunc)0,
     (binaryfunc)0,
     (binaryfunc)0,
-    (binaryfunc)0,
     (ternaryfunc)0,
     (unaryfunc)0,
     (unaryfunc)0,
@@ -882,14 +880,20 @@ _wrap_GtkContainerDataFunc(PyObject *self, PyObject *args)
 
     if (!PyArg_ParseTuple(args, "O!O!",
 			  &PyGtkWidget_Type, &py_widget,
-                          &PyCObject_Type, &py_data))
+                          &PyCapsule_Type, &py_data))
         return NULL;
     
-    data = PyCObject_AsVoidPtr(py_data);
+    data = PyCapsule_GetPointer(py_data, NULL);
     data->func(GTK_WIDGET(pygobject_get(py_widget)), data->func_data);
     
     Py_INCREF(Py_None);
     return Py_None;
+}
+
+static void
+_wrap_GtkContainer_CapsuleDestructor(PyObject *capsule)
+{
+    g_free(PyCapsule_GetPointer(capsule, NULL));
 }
 
 static void
@@ -915,7 +919,7 @@ _wrap_GtkContainer__proxy_do_forall (GtkContainer *container,
     data->func_data = callback_data;
     PyObject_Repr(self);
     PyObject_Repr(py_func);
-    py_func_data = PyCObject_FromVoidPtr(data, g_free);
+    py_func_data = PyCapsule_New(data, NULL, _wrap_GtkContainer_CapsuleDestructor);
     if (!PyObject_CallMethod(self, "do_forall", "ONN", 
 			     include_internals ? Py_True : Py_False, py_func,
 			     py_func_data))
@@ -1017,8 +1021,6 @@ _wrap_GtkContainer__do_set_child_property(PyObject *cls, PyObject *args, PyObjec
     if (py_property_id) {
         if (PyLong_Check(py_property_id))
             property_id = PyLong_AsUnsignedLong(py_property_id);
-        else if (PyInt_Check(py_property_id))
-            property_id = PyInt_AsLong(py_property_id);
         else
             PyErr_SetString(PyExc_TypeError, "Parameter 'property_id' must be an int or a long");
         if (PyErr_Occurred())
@@ -1060,8 +1062,6 @@ _wrap_GtkContainer__do_get_child_property(PyObject *cls, PyObject *args, PyObjec
     if (py_property_id) {
         if (PyLong_Check(py_property_id))
             property_id = PyLong_AsUnsignedLong(py_property_id);
-        else if (PyInt_Check(py_property_id))
-            property_id = PyInt_AsLong(py_property_id);
         else
             PyErr_SetString(PyExc_TypeError, "Parameter 'property_id' must be an int or a long");
         if (PyErr_Occurred())

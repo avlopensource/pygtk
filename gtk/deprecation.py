@@ -60,7 +60,7 @@ class _Deprecated:
             warnings.warn(message, DeprecationWarning, 2)
         try:
             return func(*args, **kwargs)
-        except TypeError, e:
+        except TypeError as e:
             raise TypeError(str(e).replace(func.__name__, self.oldname))
 
 class _DeprecatedConstant:

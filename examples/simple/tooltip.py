@@ -9,7 +9,7 @@ import gtk
 
 def hello_cb(widget, main_window):
     """ Callback function that prints a message and destroys the window """
-    print "Hello World"
+    print("Hello World")
     main_window.destroy()
 
 def destroy_cb(widget, main_window):

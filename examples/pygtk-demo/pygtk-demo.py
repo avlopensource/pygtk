@@ -20,6 +20,9 @@ import pango
 import tokenize
 import keyword
 
+string.replace = lambda s, *a, **kw: s.replace(*a, **kw)
+string.split = lambda s, *a, **kw: s.split(*a, **kw)
+
 import demos
 D_TEMPL = '%sDemo'
 
@@ -57,7 +60,7 @@ for descr, mod in demos.demo_list:
    MODULE_COLUMN,
    FUNC_COLUMN,
    ITALIC_COLUMN
-) = range(4)
+) = list(range(4))
 
 CHILDREN_COLUMN = 3
 
@@ -314,7 +317,7 @@ class PyGtkDemo(gtk.Window):
         self.insert_source(source)
 
 if __name__ == '__main__':
-    print "PyGTK Demo",
-    print "(gtk: v%d.%d.%d, " % gtk.gtk_version,
-    print "pygtk: v%d.%d.%d)" % gtk.pygtk_version
+    print("PyGTK Demo", end=' ')
+    print("(gtk: v%d.%d.%d, " % gtk.gtk_version, end=' ')
+    print("pygtk: v%d.%d.%d)" % gtk.pygtk_version)
     PyGtkDemo().run()

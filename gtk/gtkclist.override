@@ -56,13 +56,13 @@ _wrap_gtk_clist_new_with_titles(PyGObject *self, PyObject *args,
             PyObject *item = PySequence_GetItem(py_list, i);
 
             Py_DECREF(item); /* PySequence_GetItem INCREF's */
-            if (!PyString_Check(item) && !PyUnicode_Check(item)) {
+            if (!PyUnicode_Check(item)) {
                 PyErr_SetString(PyExc_TypeError,
-                                "sequence item not a string or unicode object");
+                                "sequence item not a string");
                 g_free(list);
                 return -1;
             }
-            list[i] = PyString_AsString(item);
+            list[i] = PyUnicode_AsUTF8(item);
         }
         self->obj = (GObject *)gtk_clist_new_with_titles(count, list);
         g_free(list);
@@ -91,7 +91,7 @@ _wrap_gtk_clist_get_text(PyGObject *self, PyObject *args, PyObject *kwargs)
         PyErr_SetString(PyExc_ValueError, "can't get text value");
         return NULL;
     }
-    return PyString_FromString(text);
+    return PyUnicode_FromString(text);
 }
 %%
 override gtk_clist_get_pixmap kwargs
@@ -165,17 +165,17 @@ _wrap_gtk_clist_prepend(PyGObject *self, PyObject *args, PyObject *kwargs)
         PyObject *item = PySequence_GetItem(py_list, i);
 
         Py_DECREF(item);
-        if (!PyString_Check(item) && !PyUnicode_Check(item)) {
+        if (!PyUnicode_Check(item)) {
             PyErr_SetString(PyExc_TypeError,
-                            "sequence item not a string or unicode object");
+                            "sequence item not a string object");
             g_free(list);
             return NULL;
         }
-        list[i] = PyString_AsString(item);
+        list[i] = PyUnicode_AsUTF8(item);
     }
     i = gtk_clist_prepend(GTK_CLIST(self->obj), list);
     g_free(list);
-    return PyInt_FromLong(i);
+    return PyLong_FromLong(i);
 }
 %%
 override gtk_clist_append kwargs
@@ -204,17 +204,17 @@ _wrap_gtk_clist_append(PyGObject *self, PyObject *args, PyObject *kwargs)
         PyObject *item = PySequence_GetItem(py_list, i);
 
         Py_DECREF(item);
-        if (!PyString_Check(item) && !PyUnicode_Check(item)) {
+        if (!PyUnicode_Check(item)) {
             PyErr_SetString(PyExc_TypeError,
-                            "sequence item not a string or unicode object");
+                            "sequence item not a string object");
             g_free(list);
             return NULL;
         }
-        list[i] = PyString_AsString(item);
+        list[i] = PyUnicode_AsUTF8(item);
     }
     i = gtk_clist_append(GTK_CLIST(self->obj), list);
     g_free(list);
-    return PyInt_FromLong(i);
+    return PyLong_FromLong(i);
 }
 %%
 override gtk_clist_insert kwargs
@@ -243,17 +243,17 @@ _wrap_gtk_clist_insert(PyGObject *self, PyObject *args, PyObject *kwargs)
         PyObject *item = PySequence_GetItem(py_list, i);
 
         Py_DECREF(item);
-        if (!PyString_Check(item) && !PyUnicode_Check(item)) {
+        if (!PyUnicode_Check(item)) {
             PyErr_SetString(PyExc_TypeError,
-                            "sequence item not a string or unicode object");
+                            "sequence item not a string object");
             g_free(list);
             return NULL;
         }
-        list[i] = PyString_AsString(item);
+        list[i] = PyUnicode_AsUTF8(item);
     }
     i = gtk_clist_insert(GTK_CLIST(self->obj), row, list);
     g_free(list);
-    return PyInt_FromLong(i);
+    return PyLong_FromLong(i);
 }
 %%
 override gtk_clist_set_row_data kwargs
@@ -304,7 +304,7 @@ _wrap_gtk_clist_find_row_from_data(PyGObject *self, PyObject *args,
                                      "O:GtkCList.find_row_from_data", kwlist,
                                      &data))
         return NULL;
-    return PyInt_FromLong(gtk_clist_find_row_from_data(
+    return PyLong_FromLong(gtk_clist_find_row_from_data(
                                 GTK_CLIST(self->obj), data));
 }
 %%
@@ -344,7 +344,7 @@ _wrap_gtk_clist__get_selection(PyGObject *self, void *closure)
          selection = selection->next) {
         row = GPOINTER_TO_UINT(selection->data);
 
-        py_int = PyInt_FromLong(row);
+        py_int = PyLong_FromLong(row);
 
         if (!py_int) {
             Py_DECREF(ret);

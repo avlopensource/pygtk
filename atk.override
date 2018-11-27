@@ -217,7 +217,7 @@ _wrap_atk_editable_text_insert_text(PyGObject *self, PyObject *args,
 
     atk_editable_text_insert_text(ATK_EDITABLE_TEXT(self->obj),
                                   string, length, &position);
-    return PyInt_FromLong(position);
+    return PyLong_FromLong(position);
 }
 %%
 override atk_image_get_image_size noargs
@@ -357,7 +357,7 @@ _wrap_atk_table_get_selected_columns(PyGObject *self)
     ret = atk_table_get_selected_columns(ATK_TABLE(self->obj), &selected);
     py_selected = PyTuple_New(ret);
     for (i = 0; i < ret; i++) {
-        PyTuple_SetItem(py_selected, i, PyInt_FromLong(selected[i]));
+        PyTuple_SetItem(py_selected, i, PyLong_FromLong(selected[i]));
     }
 
     g_free(selected);
@@ -374,7 +374,7 @@ _wrap_atk_table_get_selected_rows(PyGObject *self)
     ret = atk_table_get_selected_rows(ATK_TABLE(self->obj), &selected);
     py_selected = PyTuple_New(ret);
     for (i = 0; i < ret; i++) {
-        PyTuple_SetItem(py_selected, i, PyInt_FromLong(selected[i]));
+        PyTuple_SetItem(py_selected, i, PyLong_FromLong(selected[i]));
     }
 
     g_free(selected);

@@ -8,7 +8,7 @@ import gtk
 from gtk import gdk
 
 if gtk.pygtk_version < (2, 8):
-    print "PyGtk 2.8 or later required for this example"
+    print("PyGtk 2.8 or later required for this example")
     raise SystemExit
 
 try:

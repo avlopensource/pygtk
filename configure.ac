@@ -20,6 +20,7 @@ m4_define(pygobject_required_version,  2.21.3)
 AC_INIT(pygtk, pygtk_version,
         [http://bugzilla.gnome.org/enter_bug.cgi?product=pygtk])
 AC_SUBST(ACLOCAL_AMFLAGS, "-I m4 -I .")
+AC_CONFIG_MACRO_DIR([m4])
 
 AC_DEFINE(PYGTK_MAJOR_VERSION, pygtk_major_version, [PyGtk major version])
 AC_SUBST(PYGTK_MAJOR_VERSION, pygtk_major_version)
@@ -80,7 +81,7 @@ AM_PATH_PYTHON(2.3.5)
 AM_CHECK_PYTHON_HEADERS(,[AC_MSG_ERROR(could not find Python headers)])
 
 AC_MSG_CHECKING([for PySignal_SetWakeupFd in Python.h])
-py_prefix=`$PYTHON -c "import sys; print sys.prefix"`
+py_prefix=`$PYTHON -c "import sys; print(sys.prefix)"`
 old_CPPFLAGS=$CPPFLAGS
 CPPFLAGS="-Wall -Werror $PYTHON_INCLUDES"
 AC_TRY_COMPILE([#include <Python.h>],
@@ -453,7 +454,7 @@ AC_ARG_ENABLE(numpy,
 
 if test "x$enable_numpy" != xno; then
   save_CPPFLAGS="$CPPFLAGS"
-  numpy_INCLUDES=`$PYTHON -c "import numpy; print numpy.get_include()" 2> /dev/null`
+  numpy_INCLUDES=`$PYTHON -c "import numpy; print(numpy.get_include())" 2> /dev/null`
   if test "x$numpy_INCLUDES" = "x"; then
     AC_MSG_WARN([Could not find a valid numpy installation, disabling.])
     enable_numpy=no

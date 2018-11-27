@@ -43,7 +43,7 @@ def draw_text(cr):
 
 def main(argv):
     if len(argv) != 2:
-        print >> sys.stderr, "Usage: cairosimple OUTPUT_BASENAME\n"
+        print("Usage: cairosimple OUTPUT_BASENAME\n", file=sys.stderr)
         return 1
 
     filename = argv[1]

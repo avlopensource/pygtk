@@ -45,7 +45,7 @@ class LazyDict(dict):
         dict.__init__(self)
 
     def __getitem__(self, name):
-        print name
+        print(name)
         return getattr(self._module, name)
 
 class LazyNamespace(ModuleType):

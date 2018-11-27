@@ -53,8 +53,8 @@ static int have_numpy(void);
 extern PyTypeObject PyGtkWidget_Type;
 
 #ifdef HAVE_PYCAIRO
-# include <pycairo.h>
-extern Pycairo_CAPI_t *Pycairo_CAPI;
+#define PYCAIRO_NO_IMPORT
+# include <py3cairo.h>
 extern PyTypeObject PyGdkCairoContext_Type;
 #endif
 
@@ -301,12 +301,12 @@ _wrap_gdk_pixmap_create_from_xpm_d(PyObject *self, PyObject *args,
     data = g_new(gchar *, len);
     for (i = 0; i < len; i ++) {
         PyObject *item = PyList_GetItem(py_data, i);
-        if (!PyString_Check(item)) {
-            PyErr_SetString(PyExc_TypeError, "data items must be strings");
+        if (!PyBytes_Check(item)) {
+            PyErr_SetString(PyExc_TypeError, "data items must be bytes");
             g_free(data);
             return NULL;
         }
-        data[i] = PyString_AsString(item);
+        data[i] = PyBytes_AsString(item);
     }
     pixmap = gdk_pixmap_create_from_xpm_d(GDK_DRAWABLE(window->obj), &mask,
                                           trans_color, data);
@@ -369,12 +369,12 @@ _wrap_gdk_pixmap_colormap_create_from_xpm_d(PyObject *self, PyObject *args,
     data = g_new(gchar *, len);
     for (i = 0; i < len; i ++) {
         PyObject *item = PyList_GetItem(py_data, i);
-        if (!PyString_Check(item)) {
-            PyErr_SetString(PyExc_TypeError, "data items must be strings");
+        if (!PyBytes_Check(item)) {
+            PyErr_SetString(PyExc_TypeError, "data items must be bytes");
             g_free(data);
             return NULL;
         }
-        data[i] = PyString_AsString(item);
+        data[i] = PyBytes_AsString(item);
     }
     pixmap = gdk_pixmap_colormap_create_from_xpm_d(window, colormap, &mask,
                                                    trans_color, data);
@@ -518,9 +518,9 @@ _wrap_gdk_cursor_tp_repr(PyGObject *self)
 
     /* We use <...> syntax because gtk.gdk.Cursor objects are generally impossible to
      * reconstruct with eval(repr(...))  round-trip. */
-    return PyString_FromFormat("<%s at %p: %s>",
-                               self->ob_type->tp_name, self,
-                               type ? type->value_name : "UNKNOWN TYPE");
+    return PyUnicode_FromFormat("<%s at %p: %s>",
+                                Py_TYPE(self)->tp_name, self,
+                                type ? type->value_name : "UNKNOWN TYPE");
 }
 %%
 override gdk_region_get_clipbox noargs
@@ -793,7 +793,7 @@ _wrap_gdk_drag_context__get_targets(PyGObject *self, void *closure)
         gchar *name;
 
         name = gdk_atom_name(GDK_POINTER_TO_ATOM(tmp->data));
-        if ((atom = PyString_FromString(name)) == NULL) {
+        if ((atom = PyUnicode_FromString(name)) == NULL) {
             g_free(name);
             Py_DECREF(ret);
             return NULL;
@@ -838,9 +838,9 @@ _wrap_gdk_drag_begin(PyGObject *self, PyObject *args, PyObject *kwargs)
     for (i = 0; i < len; i++) {
         PyObject *item = PySequence_GetItem(py_targets, i);
 
-        if (PyInt_Check(item)) {
+        if (PyLong_Check(item)) {
             targets = g_list_append(targets,
-                                    GUINT_TO_POINTER(PyInt_AsLong(item)));
+                                    GUINT_TO_POINTER(PyLong_AsLong(item)));
             Py_DECREF(item);
         } else {
             PyErr_SetString(PyExc_TypeError, "targets must be a list of ints");
@@ -1278,7 +1278,7 @@ _wrap_gdk_keymap_lookup_key(PyGObject *self, PyObject *args,
 				     &key.level))
 	return NULL;
 
-    return PyInt_FromLong(gdk_keymap_lookup_key(GDK_KEYMAP(self->obj), &key));
+    return PyLong_FromLong(gdk_keymap_lookup_key(GDK_KEYMAP(self->obj), &key));
 }
 %%
 override gdk_keymap_translate_keyboard_state kwargs
@@ -1326,7 +1326,7 @@ _wrap_gdk_query_depths(PyObject *self)
     py_depths = PyTuple_New(count);
 
     for (i = 0; i < count; i++)
-	PyTuple_SetItem(py_depths, i, PyInt_FromLong(depths[i]));
+	PyTuple_SetItem(py_depths, i, PyLong_FromLong(depths[i]));
 
     return py_depths;
 }
@@ -1344,7 +1344,7 @@ _wrap_gdk_query_visual_types(PyObject *self)
     py_types = PyTuple_New(count);
 
     for (i = 0; i < count; i++)
-	PyTuple_SetItem(py_types, i, PyInt_FromLong(types[i]));
+	PyTuple_SetItem(py_types, i, PyLong_FromLong(types[i]));
 
     return py_types;
 }

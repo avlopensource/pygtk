@@ -1388,12 +1388,14 @@
 (define-method create_pango_context
   (of-object "GtkPrintContext")
   (c-name "gtk_print_context_create_pango_context")
+  (caller-owns-return #t)
   (return-type "PangoContext*")
 )
 
 (define-method create_pango_layout
   (of-object "GtkPrintContext")
   (c-name "gtk_print_context_create_pango_layout")
+  (caller-owns-return #t)
   (return-type "PangoLayout*")
 )
 

@@ -29,5 +29,5 @@ class Bin(gtk.Container):
 label = gtk.Label()
 c = Bin()
 c.add(label)
-print c.get_children()
+print(c.get_children())
 c.remove(label)

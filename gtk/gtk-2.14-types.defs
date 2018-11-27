@@ -5,6 +5,7 @@
   (parent "GMountOperation")
   (c-name "GtkMountOperation")
   (gtype-id "GTK_TYPE_MOUNT_OPERATION")
+  (heaptype #t)
 )
 
 (define-interface ToolShell

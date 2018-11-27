@@ -19,7 +19,7 @@
 extern PyTypeObject PyGdkAtom_Type;
 
 /* check the type of a PyObject */
-#define PyGdkAtom_Check(v) ((v)->ob_type == &PyGdkAtom_Type)
+#define PyGdkAtom_Check(v) (Py_TYPE(v) == &PyGdkAtom_Type)
 
 /* constructors for PyObject wrappers ... */
 PyObject *PyGdkAtom_New(GdkAtom atom);

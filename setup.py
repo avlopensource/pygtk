@@ -19,6 +19,7 @@ import glob
 
 from distutils.command.build import build
 from distutils.core import setup
+from setuptools.extension import Extension
 
 
 # Check for windows platform
@@ -34,8 +35,8 @@ MIN_PYTHON_VERSION = (2, 6, 0)
 
 if sys.version_info[:3] < MIN_PYTHON_VERSION:
     raise SystemExit('ERROR: Python %s or higher is required, %s found.' % (
-                         '.'.join(map(str,MIN_PYTHON_VERSION)),
-                         '.'.join(map(str,sys.version_info[:3]))))
+                         '.'.join(map(str, MIN_PYTHON_VERSION)),
+                         '.'.join(map(str, sys.version_info[:3]))))
 
 # Check for pygobject (dsextras)
 try:
@@ -43,22 +44,17 @@ try:
     pygtk.require('2.0')
 
     from dsextras import GLOBAL_MACROS, GLOBAL_INC, get_m4_define, getoutput, \
-                         have_pkgconfig, pkgc_version_check, pkgc_get_defs_dir, \
-                         PkgConfigExtension, Template, TemplateExtension, \
+                         Template, \
                          BuildExt, InstallLib, InstallData
 except ImportError:
     raise SystemExit('ERROR: Could not import dsextras module: '
                      'Make sure you have installed pygobject.')
 
-# Check for pkgconfig
-if not have_pkgconfig():
-    raise SystemExit('ERROR: Could not find pkg-config: '
-                     'Please check your PATH environment variable.')
-
 
 PYGTK_SUFFIX = '2.0'
 PYGTK_SUFFIX_LONG = 'gtk-' + PYGTK_SUFFIX
-PYGOBJECT_DEFSDIR = pkgc_get_defs_dir('pygobject-%s' % PYGTK_SUFFIX)
+# PYGOBJECT_DEFSDIR = pkgc_get_defs_dir('pygobject-%s' % PYGTK_SUFFIX)
+PYGOBJECT_DEFSDIR = '/'.join(('..', 'share', 'pygobject', PYGTK_SUFFIX, 'defs'))
 
 GOBJECT_REQUIRED   = get_m4_define('glib_required_version')
 ATK_REQUIRED       = get_m4_define('atk_required_version')
@@ -113,6 +109,8 @@ class PyGtkInstallLib(InstallLib):
     def install_tests(self):
         self.test_dir = os.path.join(self.install_dir, 'tests', 'pygtk')
         self.mkpath(self.test_dir)
+
+        return
 
         self.copy_test('runtests-windows.py', 'runtests.py')
         self.copy_test('common-windows.py', 'common.py')
@@ -182,11 +180,48 @@ gtk_extra_defs = [
     'gtk/gtk-extrafuncs.defs']
 ####################################################################
 
+
+class TemplateExtension(Extension):
+    def __init__(self, **kwargs):
+        name = kwargs['name']
+        defs = kwargs['defs']
+        prefix = 'py' + name.split('.')[-1].lstrip('_')
+
+        if isinstance(defs, tuple):
+            output = defs[0][:-5] + '.c'
+        else:
+            output = defs[:-5] + '.c'
+
+        override = kwargs['override']
+        load_types = kwargs.get('load_types')
+        py_ssize_t_clean = kwargs.pop('py_ssize_t_clean', False)
+        self.templates = []
+        self.templates.append(Template(override, output, defs, prefix,
+                                       kwargs['register'], load_types,
+                                       py_ssize_t_clean))
+
+        del kwargs['register'], kwargs['override'], kwargs['defs']
+
+        if load_types:
+            del kwargs['load_types']
+
+        if 'output' in kwargs:
+            kwargs['name'] = kwargs['output']
+            del kwargs['output']
+
+        Extension.__init__(self, **kwargs)
+
+    def generate(self):
+        for t in self.templates:
+            t.generate()
+
+    def can_build(self):
+        return True
+
 # Atk
 atk = TemplateExtension(name='atk',
-                        pkc_name=('pygobject-%s' % PYGTK_SUFFIX, 'atk'),
-                        pkc_version=(PYGOBJECT_REQUIRED, ATK_REQUIRED),
                         defs='atk.defs',
+                        libraries=['atk-1.0', 'glib-2.0', 'gobject-2.0'],
                         register=['atk-types.defs'],
                         override='atk.override',
                         sources=['atkmodule.c',
@@ -194,9 +229,8 @@ atk = TemplateExtension(name='atk',
                         py_ssize_t_clean=True)
 # Pango
 pango = TemplateExtension(name='pango',
-                          pkc_name=('pygobject-%s' % PYGTK_SUFFIX, 'pango'),
-                          pkc_version=(PYGOBJECT_REQUIRED, PANGO_REQUIRED),
                           defs='pango.defs',
+                          libraries=['pango-1.0', 'glib-2.0', 'gobject-2.0'],
                           register=['pango-types.defs'],
                           override='pango.override',
                           sources=['pangomodule.c',
@@ -204,9 +238,8 @@ pango = TemplateExtension(name='pango',
                           py_ssize_t_clean=True)
 # Pangocairo
 pangocairo = TemplateExtension(name='pangocairo',
-                               pkc_name=('pycairo', 'pangocairo'),
-                               pkc_version=(PYCAIRO_REQUIRED, PANGO_REQUIRED),
                                defs='pangocairo.defs',
+                               libraries=['pango-1.0', 'cairo', 'pangocairo-1.0', 'glib-2.0', 'gobject-2.0'],
                                register=['pango-types.defs'],
                                override='pangocairo.override',
                                sources=['pangocairomodule.c',
@@ -222,21 +255,20 @@ gdk_template = Template('gtk/gdk.override', 'gtk/gdk.c',
                                   ('gtk/gdk-types.defs', gdk_defs)],
                         py_ssize_t_clean=True)
 # Gtk+
-gtk_pkc_defs=('gtk/gtk.defs', gtk_defs)
-gtk_pkc_register=['%s/gio-types.defs' % PYGOBJECT_DEFSDIR,
-                  'atk-types.defs',
-                  'pango-types.defs',
-                  ('gtk/gdk-types.defs',['gtk/gdk-base-types.defs']),
-                  ('gtk/gtk-types.defs', gtk_types_defs)]
-libglade_pkc_register=[('gtk/gdk-types.defs',['gtk/gdk-base-types.defs']),
-                       ('gtk/gtk-types.defs',gtk_types_defs),
-                       'gtk/libglade.defs']
+gtk_pkc_defs = ('gtk/gtk.defs', gtk_defs)
+gtk_pkc_register = ['%s/gio-types.defs' % PYGOBJECT_DEFSDIR,
+                    'atk-types.defs',
+                    'pango-types.defs',
+                    ('gtk/gdk-types.defs', ['gtk/gdk-base-types.defs']),
+                    ('gtk/gtk-types.defs', gtk_types_defs)]
+libglade_pkc_register = [('gtk/gdk-types.defs', ['gtk/gdk-base-types.defs']),
+                         ('gtk/gtk-types.defs', gtk_types_defs),
+                         'gtk/libglade.defs']
 
 gtk = TemplateExtension(name='gtk',
-                        pkc_name=('gtk+-%s' % PYGTK_SUFFIX, 'pycairo'),
-                        pkc_version=(GTK_REQUIRED, PYCAIRO_REQUIRED),
                         output='gtk._gtk',
                         defs=gtk_pkc_defs,
+                        libraries=['gtk-win32-2.0', 'gdk-win32-2.0', 'gdk_pixbuf-2.0', 'pango-1.0', 'glib-2.0', 'gobject-2.0', 'gio-2.0', 'cairo', 'atk-1.0'],
                         sources=['gtk/gtkmodule.c',
                                  'gtk/gtkobject-support.c',
                                  'gtk/gtk-types.c',
@@ -246,13 +278,12 @@ gtk = TemplateExtension(name='gtk',
                                  'gtk/gtk.c'],
                         register=gtk_pkc_register,
                         override='gtk/gtk.override',
-                        py_ssize_t_clean=True)
+                        py_ssize_t_clean=True,
+                        extra_compile_args=['/DHAVE_PYCAIRO'])
 gtk.templates.append(gdk_template)
 
 # Libglade
 libglade = TemplateExtension(name='libglade',
-                             pkc_name='libglade-%s' % PYGTK_SUFFIX,
-                             pkc_version=LIBGLADE_REQUIRED,
                              output='gtk.glade',
                              defs='gtk/libglade.defs',
                              sources=['gtk/libglademodule.c',
@@ -314,7 +345,7 @@ if gtk.can_build():
     else:
         raise SystemExit('ERROR: Nothing to do, pango could not be built and is essential.')
 
-    if libglade.can_build():
+    if False and libglade.can_build():
         ext_modules.append(libglade)
         data_files.append((DEFS_DIR, ('gtk/libglade.defs',)))
 else:
@@ -328,8 +359,7 @@ else:
     if '--enable-threading' in sys.argv:
         sys.argv.remove('--enable-threading')
     try:
-        import thread
-        thread # pyflakes
+        import _thread
     except ImportError:
         print ('* Could not import thread module, disabling threading.')
         enable_threading = False

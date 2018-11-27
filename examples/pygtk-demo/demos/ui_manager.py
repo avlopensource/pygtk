@@ -12,10 +12,10 @@ import gobject
 import gtk
 
 def activate_action(action):
-    print 'Action "%s" activated' % action.get_name()
+    print('Action "%s" activated' % action.get_name())
 
 def activate_radio_action(action, current):
-    print 'Radio action "%s" selected'% current.get_name()
+    print('Radio action "%s" selected'% current.get_name())
 
 entries = (
   ( "FileMenu", None, "_File" ),               # name, stock id, label
@@ -65,7 +65,7 @@ toggle_entries = (
   COLOR_RED,
   COLOR_GREEN,
   COLOR_BLUE
-) = range(3)
+) = list(range(3))
 
 color_entries = (
   ( "Red", None,                               # name, stock id
@@ -83,7 +83,7 @@ color_entries = (
   SHAPE_SQUARE,
   SHAPE_RECTANGLE,
   SHAPE_OVAL,
-) = range(3)
+) = list(range(3))
 
 # GtkRadioActionEntry
 shape_entries = (
@@ -157,8 +157,8 @@ class UIManagerDemo(gtk.Window):
 
         try:
             mergeid = ui.add_ui_from_string(ui_info)
-        except gobject.GError, msg:
-            print "building menus failed: %s" % msg
+        except gobject.GError as msg:
+            print("building menus failed: %s" % msg)
 
         box1 = gtk.VBox(False, 0)
         self.add(box1)

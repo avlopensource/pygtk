@@ -179,8 +179,7 @@ static PyMethodDef _PyGdkCairoContext_methods[] = {
 
 
 PyTypeObject PyGdkCairoContext_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,                                  /* ob_size */
+    PyVarObject_HEAD_INIT(NULL, 0)
     "gtk.gdk.CairoContext",             /* tp_name */
     0,           			/* tp_basicsize */
     0,                                  /* tp_itemsize */
@@ -189,7 +188,7 @@ PyTypeObject PyGdkCairoContext_Type = {
     (printfunc)0,                       /* tp_print */
     (getattrfunc)0,                     /* tp_getattr */
     (setattrfunc)0,                     /* tp_setattr */
-    (cmpfunc)0,                         /* tp_compare */
+    (PyAsyncMethods *)0,                /* tp_as_async */
     (reprfunc)0,                        /* tp_repr */
     0,                                  /* tp_as_number */
     0,                                  /* tp_as_sequence */

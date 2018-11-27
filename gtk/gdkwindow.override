@@ -146,7 +146,7 @@ _wrap_gdk_property_get(PyGObject *self, PyObject *args, PyObject *kwargs)
 
         switch (aformat) {
         case 8:
-            if ((pdata = PyString_FromStringAndSize((char*)data,
+            if ((pdata = PyBytes_FromStringAndSize((char*)data,
 						    alength)) == NULL)
                 return NULL;
             break;
@@ -158,7 +158,7 @@ _wrap_gdk_property_get(PyGObject *self, PyObject *args, PyObject *kwargs)
             if ((pdata = PyList_New(nelements)) == NULL)
                 return NULL;
             for (i = 0; i < nelements; i++)
-                PyList_SetItem(pdata, i, PyInt_FromLong(data16[i]));
+                PyList_SetItem(pdata, i, PyLong_FromLong(data16[i]));
             break;
         }
         case 32: {
@@ -177,7 +177,7 @@ _wrap_gdk_property_get(PyGObject *self, PyObject *args, PyObject *kwargs)
                     return NULL;
                 for (i = 0; i < nelements; i++) {
                     aname = gdk_atom_name(data32[i]);
-                    PyList_SetItem(pdata, i, PyString_FromString(aname));
+                    PyList_SetItem(pdata, i, PyUnicode_FromString(aname));
                     g_free(aname);
                 }
             } else {
@@ -188,7 +188,7 @@ _wrap_gdk_property_get(PyGObject *self, PyObject *args, PyObject *kwargs)
                 if ((pdata = PyList_New(nelements)) == NULL)
                     return NULL;
                 for (i = 0; i < nelements; i++)
-                    PyList_SetItem(pdata, i, PyInt_FromLong(data32[i]));
+                    PyList_SetItem(pdata, i, PyLong_FromLong(data32[i]));
             }
             break;
         }
@@ -198,7 +198,7 @@ _wrap_gdk_property_get(PyGObject *self, PyObject *args, PyObject *kwargs)
         }
         g_free(data);
         aname = gdk_atom_name(atype);
-        ret = Py_BuildValue("(NiN)", PyString_FromString(aname), aformat,
+        ret = Py_BuildValue("(NiN)", PyUnicode_FromString(aname), aformat,
                             pdata);
         g_free(aname);
         return ret;
@@ -239,12 +239,12 @@ _wrap_gdk_property_change(PyGObject *self, PyObject *args, PyObject *kwargs)
         return NULL;
     switch (format) {
     case 8:
-        if (!PyString_Check(pdata)) {
+        if (!PyBytes_Check(pdata)) {
             PyErr_SetString(PyExc_TypeError, "data not a string and format=8");
             return NULL;
         }
-        data = (guchar*)PyString_AsString(pdata);
-        nelements = PyString_Size(pdata);
+        data = (guchar*)PyBytes_AsString(pdata);
+        nelements = PyBytes_Size(pdata);
         break;
     case 16: {
         short *data16;
@@ -261,7 +261,7 @@ _wrap_gdk_property_change(PyGObject *self, PyObject *args, PyObject *kwargs)
         for (i = 0; i < nelements; i++) {
             PyObject *item = PySequence_GetItem(pdata, i);
 
-            if (item) data16[i] = PyInt_AsLong(item);
+            if (item) data16[i] = PyLong_AsLong(item);
             if (!item || PyErr_Occurred()) {
                 Py_XDECREF(item);
                 g_free(data16);
@@ -313,7 +313,7 @@ _wrap_gdk_property_change(PyGObject *self, PyObject *args, PyObject *kwargs)
             for (i = 0; i < nelements; i++) {
                 PyObject *item = PySequence_GetItem(pdata, i);
 
-                if (item) data32[i] = PyInt_AsLong(item);
+                if (item) data32[i] = PyLong_AsLong(item);
                 if (!item || PyErr_Occurred()) {
                     Py_XDECREF(item);
                     g_free(data32);
@@ -665,7 +665,7 @@ pygdk_filter_func_marshal(GdkXEvent *xevent,
         PyErr_Print();
 	retval = GDK_FILTER_CONTINUE;
     } else {
-	retval = PyInt_AsLong(ret);
+	retval = PyLong_AsLong(ret);
     }
     
     pyg_gil_state_release(state);

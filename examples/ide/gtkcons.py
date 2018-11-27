@@ -64,7 +64,7 @@ def remQuotStr(s):
 
 def bracketsBalanced(s):
     '''Returns true iff the brackets in s are balanced'''
-    s = filter(lambda x: x in '()[]{}', s)
+    s = [x for x in s if x in '()[]{}']
     stack = []
     brackets = {'(':')', '[':']', '{':'}'}
     while len(s) != 0:
@@ -106,8 +106,8 @@ class gtkoutfile:
             self.__b.insert_with_tags(iter, s, self.__font)
         self.__w.scroll_to_mark(self.__ins, 0.0)
         self.__w.queue_draw()
-    def seek(self, a):   raise IOError, (29, 'Illegal seek')
-    def tell(self):      raise IOError, (29, 'Illegal seek')
+    def seek(self, a):   raise IOError(29, 'Illegal seek')
+    def tell(self):      raise IOError(29, 'Illegal seek')
     truncate = tell
 
 class Console(gtk.VBox):
@@ -288,9 +288,9 @@ class Console(gtk.VBox):
             try:
                 r = eval(cmd, self.namespace, self.namespace)
                 if r is not None:
-                    print `r`
+                    print(repr(r))
             except SyntaxError:
-                exec cmd in self.namespace
+                exec(cmd, self.namespace)
         except:
             if hasattr(sys, 'last_type') and \
                             sys.last_type == SystemExit:

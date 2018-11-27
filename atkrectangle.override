@@ -105,10 +105,10 @@ _wrap_atk_rectangle_getitem(PyGBoxed *self, Py_ssize_t pos)
     }
     rect = pyg_boxed_get(self, AtkRectangle);
     switch (pos) {
-    case 0: return PyInt_FromLong(rect->x);
-    case 1: return PyInt_FromLong(rect->y);
-    case 2: return PyInt_FromLong(rect->width);
-    case 3: return PyInt_FromLong(rect->height);
+    case 0: return PyLong_FromLong(rect->x);
+    case 1: return PyLong_FromLong(rect->y);
+    case 2: return PyLong_FromLong(rect->width);
+    case 3: return PyLong_FromLong(rect->height);
     default:
         g_assert_not_reached();
         return NULL;
@@ -126,7 +126,7 @@ _wrap_atk_rectangle_setitem(PyGBoxed *self, Py_ssize_t pos, PyObject *value)
         return -1;
     }
     rect = pyg_boxed_get(self, AtkRectangle);
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     switch(pos) {
@@ -158,7 +158,7 @@ _wrap_atk_rectangle__set_x(PyGBoxed *self, PyObject *value, void *closure)
 {
     gint val;
 
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     pyg_boxed_get(self, AtkRectangle)->x = val;
@@ -171,7 +171,7 @@ _wrap_atk_rectangle__set_y(PyGBoxed *self, PyObject *value, void *closure)
 {
     gint val;
 
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     pyg_boxed_get(self, AtkRectangle)->y = val;
@@ -184,7 +184,7 @@ _wrap_atk_rectangle__set_width(PyGBoxed *self, PyObject *value, void *closure)
 {
     gint val;
 
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     pyg_boxed_get(self, AtkRectangle)->width = val;
@@ -197,7 +197,7 @@ _wrap_atk_rectangle__set_height(PyGBoxed *self, PyObject *value, void *closure)
 {
     gint val;
 
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     pyg_boxed_get(self, AtkRectangle)->height = val;

@@ -13,7 +13,7 @@ class SimpleTest:
         xml.signal_autoconnect(self)
 
     def on_button1_clicked(self, button):
-        print 'foo!'
+        print('foo!')
 
 test = SimpleTest()
 gtk.main()

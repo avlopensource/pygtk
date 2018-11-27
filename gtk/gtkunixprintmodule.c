@@ -29,25 +29,38 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkunixprint.h>
 
-# include <pycairo.h>
-Pycairo_CAPI_t *Pycairo_CAPI;
- 
+#include <py3cairo.h>
+
 void pygtkunixprint_register_classes(PyObject *d);
 void pygtkunixprint_add_constants(PyObject *module, const gchar *strip_prefix);
 extern PyMethodDef pygtkunixprint_functions[];
 
-DL_EXPORT(void)
-initgtkunixprint(void)
+static struct PyModuleDef gtkunixprintmodule_def = {
+    PyModuleDef_HEAD_INIT,
+    "gtkunixprint",
+    NULL,
+    -1,
+    pygtkunixprint_functions
+};
+
+
+
+PyMODINIT_FUNC
+PyInit_gtkunixprint(void)
 {
     PyObject *m, *d;
 
-    m = Py_InitModule("gtkunixprint", pygtkunixprint_functions);
+    m = PyModule_Create(&gtkunixprintmodule_def);
     d = PyModule_GetDict(m);
 
-    init_pygobject();
-    Pycairo_IMPORT;
+    if (!pygobject_init(-1, -1, -1))
+        return NULL;
+    if (import_cairo() < 0)
+        return NULL;
     init_pygtk();
 
     pygtkunixprint_register_classes(d);
     pygtkunixprint_add_constants(m, "GTK_");
+
+    return m;
 }

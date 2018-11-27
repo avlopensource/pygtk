@@ -70,7 +70,7 @@ EXTRA_DIST += $(ATK_DEFS) $(ATK_OVERRIDES)
 atk.c: $(ATK_DEFS) $(ATK_OVERRIDES)
 atk_la_CFLAGS = $(ATK_CFLAGS)
 atk_la_LIBADD = $(ATK_LIBS)
-atk_la_LDFLAGS = $(common_ldflags) -export-symbols-regex initatk
+atk_la_LDFLAGS = $(common_ldflags) -export-symbols-regex PyInit_atk
 atk_la_SOURCES = atkmodule.c
 nodist_atk_la_SOURCES = atk.c
 if BUILD_ATK
@@ -85,7 +85,7 @@ EXTRA_DIST += $(PANGO_DEFS) pango.override
 pango.c: $(PANGO_DEFS) pango.override
 pango_la_CFLAGS = $(PANGO_CFLAGS)
 pango_la_LIBADD = $(PANGO_LIBS)
-pango_la_LDFLAGS = $(common_ldflags) -export-symbols-regex initpango
+pango_la_LDFLAGS = $(common_ldflags) -export-symbols-regex PyInit_pango
 pango_la_SOURCES = pangomodule.c
 nodist_pango_la_SOURCES = pango.c
 if BUILD_PANGO
@@ -99,7 +99,7 @@ CLEANFILES += pangocairo.c
 EXTRA_DIST += $(PANGOCAIRO_DEFS) pangocairo.override
 pangocairo.c: $(PANGOCAIRO_DEFS) pangocairo.override
 pangocairo_la_CFLAGS = $(PYCAIRO_CFLAGS) $(PANGOCAIRO_CFLAGS)
-pangocairo_la_LDFLAGS = $(common_ldflags) -export-symbols-regex initpangocairo
+pangocairo_la_LDFLAGS = $(common_ldflags) -export-symbols-regex PyInit_pangocairo
 pangocairo_la_LIBADD = $(PANGOCAIRO_LIBS)
 pangocairo_la_SOURCES = pangocairomodule.c
 nodist_pangocairo_la_SOURCES = pangocairo.c

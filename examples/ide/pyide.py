@@ -127,7 +127,7 @@ class Application(gtk.Window):
         if dir not in sys.path: sys.path.insert(0, dir)
         if   string.lower(base[-3:]) == '.py':  base = base[:-3]
         elif string.lower(base[-4:]) == '.pyc': base = base[:-4]
-        if not sys.modules.has_key(base):
+        if base not in sys.modules:
             self.interp.run('import ' + base)
         else:
             self.interp.run('import ' + base)
@@ -225,7 +225,7 @@ class Application(gtk.Window):
         self.interp.line.delete_selection()
         return
     def python_reload(self, mi=None):
-        print "python_reload"
+        print("python_reload")
         return
     def python_run(self, mi=None):
         fname = dialogs.OpenFile("Run", self)

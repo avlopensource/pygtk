@@ -29,7 +29,7 @@ dialog.add_filter(filter)
 
 response = dialog.run()
 if response == gtk.RESPONSE_OK:
-    print dialog.get_filename(), 'selected'
+    print(dialog.get_filename(), 'selected')
 elif response == gtk.RESPONSE_CANCEL:
-    print 'Closed, no files selected'
+    print('Closed, no files selected')
 dialog.destroy()

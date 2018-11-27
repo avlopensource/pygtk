@@ -111,7 +111,7 @@ pygtk_target_list_to_list(GtkTargetList *targets)
         PyObject *item;
         gchar * name = gdk_atom_name(pair->target);
         item = Py_BuildValue("(Nii)",
-                             PyString_FromString(name),
+                             PyUnicode_FromString(name),
                              pair->flags, pair->info);
         PyList_Append(list, item);
         g_free(name);
@@ -130,7 +130,7 @@ pygtk_boxed_unref_shared(PyObject *boxed)
     PyGBoxed *pyboxed;
     g_return_if_fail(boxed != NULL && PyObject_TypeCheck(boxed, &PyGBoxed_Type));
     pyboxed = (PyGBoxed *) boxed;
-    if (pyboxed->ob_refcnt != 1) {
+    if (Py_REFCNT(pyboxed) != 1) {
         if (!pyboxed->free_on_dealloc) {
             pyboxed->boxed = g_boxed_copy(pyboxed->gtype,
                                           pyboxed->boxed);

@@ -32,7 +32,7 @@ _wrap_gtk_rc_style__set_name(PyGObject *self, PyObject *value, void *closure)
     if (value == Py_None)
         name = NULL;
     else if ((as_string = PyObject_Str(value)) != NULL) {
-        name = g_strdup(PyString_AsString(as_string));
+        name = g_strdup(PyUnicode_AsUTF8(as_string));
         Py_DECREF(as_string);
     }
     else
@@ -122,8 +122,8 @@ _wrap_gtk_rc_style__set_xthickness(PyGObject *self, PyObject *value, void *closu
 {
     GtkRcStyle *rc_style = GTK_RC_STYLE(self->obj);
 
-    if (PyInt_Check(value)) {
-        rc_style->xthickness = PyInt_AsLong(value);
+    if (PyLong_Check(value)) {
+        rc_style->xthickness = PyLong_AsLong(value);
         return 0;
     }
     else {
@@ -139,8 +139,8 @@ _wrap_gtk_rc_style__set_ythickness(PyGObject *self, PyObject *value, void *closu
 {
     GtkRcStyle *rc_style = GTK_RC_STYLE(self->obj);
 
-    if (PyInt_Check(value)) {
-        rc_style->ythickness = PyInt_AsLong(value);
+    if (PyLong_Check(value)) {
+        rc_style->ythickness = PyLong_AsLong(value);
         return 0;
     }
     else {

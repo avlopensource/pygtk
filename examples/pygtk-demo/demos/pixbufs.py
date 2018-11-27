@@ -87,7 +87,7 @@ class PixbufsDemo(gtk.Window):
         try:
             self.background = gtk.gdk.pixbuf_new_from_file(
                 os.path.join(IMAGE_DIR, BACKGROUND_NAME))
-        except gobject.GError, error:
+        except gobject.GError as error:
             return False
 
         self.back_width  = self.background.get_width()
@@ -97,7 +97,7 @@ class PixbufsDemo(gtk.Window):
             try:
                 self.images.append(gtk.gdk.pixbuf_new_from_file(
                     os.path.join(IMAGE_DIR, filename)))
-            except gobject.GError, error:
+            except gobject.GError as error:
                 return False
 
         return True

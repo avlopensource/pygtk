@@ -26,7 +26,7 @@
 #include <pygobject.h>
 
 #include <pango/pangocairo.h>
-#include <pycairo.h>
+#include <py3cairo.h>
 
 /* include any extra headers needed here */
 
@@ -37,28 +37,35 @@ extern PyMethodDef pypangocairo_functions[];
 extern PyTypeObject PyPangoCairoContext_Type;
 extern GType pypango_layout_line_type;
 
-Pycairo_CAPI_t *Pycairo_CAPI;
+static struct PyModuleDef pangocairomodule_def = {
+    PyModuleDef_HEAD_INIT,
+    "pangocairo",
+    NULL,
+    -1,
+    pypangocairo_functions
+};
 
-
-DL_EXPORT(void)
-initpangocairo(void)
+PyMODINIT_FUNC
+PyInit_pangocairo(void)
 {
     PyObject *m, *d;
 
     /* perform any initialisation required by the library here */
 
-    m = Py_InitModule("pangocairo", pypangocairo_functions);
+    /* m = Py_InitModule("pangocairo", pypangocairo_functions); */
+    m = PyModule_Create(&pangocairomodule_def);
     d = PyModule_GetDict(m);
 
-    Pycairo_IMPORT;
-    if (Pycairo_CAPI == NULL)
-        return;
+    if (import_cairo() < 0)
+        return NULL;
 
     PyPangoCairoContext_Type.tp_base = &PycairoContext_Type;
     if (PyType_Ready(&PyPangoCairoContext_Type) < 0) {
-        g_return_if_reached();
+        /* g_return_if_reached(); */
+        return NULL;
     }
-    init_pygobject();
+    if (!pygobject_init(-1, -1, -1))
+        return NULL;
 
     pypangocairo_register_classes(d);
 
@@ -66,5 +73,7 @@ initpangocairo(void)
     PyModule_AddObject(m, "CairoContext", (PyObject *)&PyPangoCairoContext_Type);
 
     pypango_layout_line_type = g_type_from_name("PangoLayoutLine");
+
+    return m;
 }
 

@@ -60,6 +60,26 @@ struct _PyGtk_FunctionStruct *_PyGtk_API;
 
 
 /* a function to initialise the pygtk functions */
+
+/* Python 2.7 introduced the PyCapsule API and deprecated the CObject API */
+#if PY_VERSION_HEX >= 0x03000000
+#define init_pygtk() G_STMT_START { \
+    void *capsule = PyCapsule_Import("gtk._gtk._PyGtk_API", 0); \
+    if (!capsule) { \
+        return NULL; \
+    } \
+    _PyGtk_API = (struct _PyGtk_FunctionStruct*)capsule; \
+} G_STMT_END
+#elif PY_VERSION_HEX >= 0x02070000
+#define init_pygtk() G_STMT_START { \
+    void *capsule = PyCapsule_Import("gtk._gtk._PyGtk_API", 0); \
+    if (!capsule) { \
+        return; \
+    } \
+    _PyGtk_API = (struct _PyGtk_FunctionStruct*)capsule; \
+} G_STMT_END
+#else /* PY_VERSION_HEX */
+/* Python 2.6 and earlier use the CObject API */
 #define init_pygtk() G_STMT_START { \
     PyObject *pygtk = PyImport_ImportModule("gtk"); \
     if (pygtk != NULL) { \
@@ -79,6 +99,7 @@ struct _PyGtk_FunctionStruct *_PyGtk_API;
         return; \
     } \
 } G_STMT_END
+#endif /* PY_VERSION_HEX */
 
 #endif
 

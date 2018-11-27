@@ -6,6 +6,7 @@
   (parent "GObject")
   (c-name "GtkEntryBuffer")
   (gtype-id "GTK_TYPE_ENTRY_BUFFER")
+  (heaptype #t)
 )
 
 (define-object InfoBar
@@ -13,6 +14,7 @@
   (parent "GtkHBox")
   (c-name "GtkInfoBar")
   (gtype-id "GTK_TYPE_INFO_BAR")
+  (heaptype #t)
 )
 
 (define-object HSV
@@ -20,4 +22,5 @@
   (parent "GtkWidget")
   (c-name "GtkHSV")
   (gtype-id "GTK_TYPE_HSV")
+  (heaptype #t)
 )

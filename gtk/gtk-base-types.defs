@@ -1507,6 +1507,7 @@
   (parent "GtkBox")
   (c-name "GtkButtonBox")
   (gtype-id "GTK_TYPE_BUTTON_BOX")
+  (heaptype #t)
 )
 
 (define-object Calendar
@@ -1639,6 +1640,7 @@
     '("GtkWidget*" "entry")
     '("GtkWidget*" "list")
   )
+  (heaptype #t)
 )
 
 (define-object ComboBox
@@ -1747,6 +1749,7 @@
   (c-name "GtkFileChooserButton")
   (gtype-id "GTK_TYPE_FILE_CHOOSER_BUTTON")
   (implements "GtkFileChooser")
+  (heaptype #t)
 )
 
 (define-object FileChooserDialog
@@ -1763,6 +1766,7 @@
   (c-name "GtkFileChooserWidget")
   (gtype-id "GTK_TYPE_FILE_CHOOSER_WIDGET")
   (implements "GtkFileChooser")
+  (heaptype #t)
 )
 
 (define-object FileFilter
@@ -1818,6 +1822,7 @@
   (parent "GtkVBox")
   (c-name "GtkFontSelection")
   (gtype-id "GTK_TYPE_FONT_SELECTION")
+  (heaptype #t)
 )
 
 (define-object FontSelectionDialog
@@ -1854,6 +1859,7 @@
     '("GtkWidget*" "gamma_dialog")
     '("GtkWidget*" "gamma_text")
   )
+  (heaptype #t)
 )
 
 (define-object HandleBox
@@ -1868,6 +1874,7 @@
   (parent "GtkBox")
   (c-name "GtkHBox")
   (gtype-id "GTK_TYPE_HBOX")
+  (heaptype #t)
 )
 
 (define-object HButtonBox
@@ -1875,6 +1882,7 @@
   (parent "GtkButtonBox")
   (c-name "GtkHButtonBox")
   (gtype-id "GTK_TYPE_HBUTTON_BOX")
+  (heaptype #t)
 )
 
 (define-object HPaned
@@ -2306,6 +2314,7 @@
   (parent "GtkHBox")
   (c-name "GtkStatusbar")
   (gtype-id "GTK_TYPE_STATUSBAR")
+  (heaptype #t)
 )
 
 (define-object Style
@@ -2534,6 +2543,7 @@
   (parent "GtkButtonBox")
   (c-name "GtkVButtonBox")
   (gtype-id "GTK_TYPE_VBUTTON_BOX")
+  (heaptype #t)
 )
 
 (define-object Viewport

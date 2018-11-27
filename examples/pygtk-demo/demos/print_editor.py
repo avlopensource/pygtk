@@ -69,7 +69,7 @@ def load_file(open_filename):
     error_dialog = None
     try:
         contents = file(open_filename).read()
-    except IOError, ex:
+    except IOError as ex:
         error_dialog = gtk.MessageDialog(main_window,
                                          gtk.DIALOG_DESTROY_WITH_PARENT,
                                          gtk.MESSAGE_ERROR,
@@ -116,7 +116,7 @@ def save_file(save_filename):
 
     try:
         file(save_filename, "w").write(text)
-    except IOError, ex:
+    except IOError as ex:
         error_dialog = gtk.MessageDialog(main_window,
                                          gtk.DIALOG_DESTROY_WITH_PARENT,
                                          gtk.MESSAGE_ERROR,
@@ -173,7 +173,7 @@ def begin_print(operation, context, print_data):
     page_breaks = []
     page_height = 0
 
-    for line in xrange(num_lines):
+    for line in range(num_lines):
       layout_line = print_data.layout.get_line(line)
       ink_rect, logical_rect = layout_line.get_extents()
       lx, ly, lwidth, lheight = logical_rect
@@ -251,7 +251,7 @@ def do_print(action):
 
     try:
         res = print_.run(gtk.PRINT_OPERATION_ACTION_PRINT_DIALOG, main_window)
-    except gobject.GError, ex:
+    except gobject.GError as ex:
         error_dialog = gtk.MessageDialog(main_window,
                                          gtk.DIALOG_DESTROY_WITH_PARENT,
                                          gtk._MESSAGE_ERROR,

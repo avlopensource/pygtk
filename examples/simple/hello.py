@@ -8,7 +8,7 @@ import gtk
 
 def hello(*args):
     """ Callback function that is attached to the button """
-    print "Hello World"
+    print("Hello World")
     window.destroy()
 
 def destroy(*args):

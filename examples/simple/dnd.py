@@ -31,7 +31,7 @@ target = [
 def target_drag_leave(w, context, time):
     global trashcan_closed
     global have_drag
-    print 'leave'
+    print('leave')
     have_drag = False
     w.set_from_pixbuf(trashcan_closed)
 def target_drag_motion(w, context, x, y, time):
@@ -41,17 +41,17 @@ def target_drag_motion(w, context, x, y, time):
         have_drag = True
         w.set_from_pixbuf(trashcan_open)
     source_widget = context.get_source_widget()
-    print 'motion, source ',
+    print('motion, source ', end=' ')
     if source_widget:
-        print source_widget.__class__.__name__
+        print(source_widget.__class__.__name__)
     else:
-        print 'unknown'
+        print('unknown')
     context.drag_status(context.suggested_action, time)
     return True
 def target_drag_drop(w, context, x, y, time):
     global trashcan_closed
     global have_drag
-    print 'drop'
+    print('drop')
     have_drag = False
     w.set_from_pixbuf(trashcan_closed)
     if context.targets:
@@ -60,19 +60,19 @@ def target_drag_drop(w, context, x, y, time):
     return False
 def target_drag_data_received(w, context, x, y, data, info, time):
     if data.format == 8:
-        print 'Received "%s" in trashcan' % data.data
+        print('Received "%s" in trashcan' % data.data)
         context.finish(True, False, time)
     else:
         context.finish(False, False, time)
 def label_drag_data_received(w, context, x, y, data, info, time):
     if data and data.format == 8:
-        print 'Received "%s" in label' % data.data
+        print('Received "%s" in label' % data.data)
         context.finish(True, False, time)
     else:
         context.finish(False, False, time)
 def source_drag_data_get(w, context, selection_data, info, time):
     if info == TARGET_ROOTWIN:
-        print 'I was dropped on the rootwin'
+        print('I was dropped on the rootwin')
     else:
         selection_data.set(selection_data.target, 8, "I'm Data!")
 
@@ -88,17 +88,17 @@ def popup_motion(w, context, x, y, time):
     if not in_popup:
         in_popup = True
         if popdown_timer:
-            print 'removed popdown'
+            print('removed popdown')
             gobject.source_remove(popdown_timer)
             popdown_timer = 0
     return True
 def popup_leave(w, context, time):
     global in_popup, popdown_timer
-    print 'popup_leave'
+    print('popup_leave')
     if in_popup:
         in_popup = False
         if not popdown_timer:
-            print 'added popdown'
+            print('added popdown')
             popdown_timer = gobject.timeout_add(500, popdown_cb)
 def popup_cb():
     global popped_up, popup_win
@@ -121,7 +121,7 @@ def popup_cb():
         popup_win.show()
         popped_up = True
     popdown_timer = gobject.timeout_add(500, popdown_cb)
-    print 'added popdown'
+    print('added popdown')
     popup_timer = 0
     return False
 def popsite_motion(w, context, x, y, time):
@@ -135,7 +135,7 @@ def popsite_leave(w, context, time):
         gobject.source_remove(popup_timer)
         popup_timer = 0
 def source_drag_data_delete(w, context, data):
-    print 'Delete the data!'
+    print('Delete the data!')
 def create_pixmap(w, xpm):
     return gtk.gdk.pixmap_create_from_xpm_d(w.window, None, xpm)
 def main():

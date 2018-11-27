@@ -105,9 +105,9 @@ _wrap_gtk_tree_view_column_new(PyGObject *self, PyObject*args, PyObject*kwargs)
 
     if (kwargs) {
         while (PyDict_Next(kwargs, &i, &key, &item)) {
-            gchar *attr = PyString_AsString(key);
+            gchar *attr = PyUnicode_AsUTF8(key);
 
-            if (!PyInt_Check(item)) {
+            if (!PyLong_Check(item)) {
                 gchar err[128];
                 g_snprintf(err, sizeof(err),
                            "%s must be an integer column number", attr);
@@ -123,7 +123,7 @@ _wrap_gtk_tree_view_column_new(PyGObject *self, PyObject*args, PyObject*kwargs)
             }
 
             gtk_tree_view_column_add_attribute(tvc, cell, attr,
-                                               PyInt_AsLong(item));
+                                               PyLong_AsLong(item));
         }
     }
     return 0;
@@ -298,7 +298,7 @@ _wrap_gtk_tree_view_insert_column_with_data_func (PyGObject *self,
         (GtkTreeCellDataFunc)pygtk_cell_data_func_marshal,
         cunote,
         pygtk_custom_destroy_notify);
-    return PyInt_FromLong(retval);
+    return PyLong_FromLong(retval);
 }
 %%
 override gtk_tree_view_get_path_at_pos kwargs
@@ -328,8 +328,8 @@ _wrap_gtk_tree_view_get_path_at_pos(PyGObject *self, PyObject *args,
             PyTuple_SetItem(ret, 0, Py_None);
         }
         PyTuple_SetItem(ret, 1, pygobject_new((GObject *)column));
-        PyTuple_SetItem(ret, 2, PyInt_FromLong(cell_x));
-        PyTuple_SetItem(ret, 3, PyInt_FromLong(cell_y));
+        PyTuple_SetItem(ret, 2, PyLong_FromLong(cell_x));
+        PyTuple_SetItem(ret, 3, PyLong_FromLong(cell_y));
         return ret;
     } else {
         Py_INCREF(Py_None);
@@ -371,9 +371,9 @@ _wrap_gtk_tree_view_insert_column_with_attributes(PyGObject *self, PyObject *arg
 
     if (kwargs) {
         while (PyDict_Next(kwargs, &i, &key, &item)) {
-            gchar *attr = PyString_AsString(key);
+            gchar *attr = PyUnicode_AsUTF8(key);
 
-            if (!PyInt_Check(item)) {
+            if (!PyLong_Check(item)) {
                 gchar err[128];
                 g_snprintf(err, sizeof(err),
                            "%s must be an integer column number", attr);
@@ -381,7 +381,7 @@ _wrap_gtk_tree_view_insert_column_with_attributes(PyGObject *self, PyObject *arg
                 return NULL;
             }
             gtk_tree_view_column_add_attribute(column, cell, attr,
-                                               PyInt_AsLong(item));
+                                               PyLong_AsLong(item));
         }
     }
     return pygobject_new ((GObject *) column);
@@ -671,12 +671,10 @@ pygtk_tree_selection_marshal(GtkTreeSelection *selection,
     Py_DECREF(pypath);
     if (retobj) {
         if(retobj == Py_None);
-        else if(PyInt_Check(retobj))
-            retval = PyInt_AsLong(retobj) && TRUE;
         else if(PyLong_Check(retobj))
             retval = PyLong_AsLongLong(retobj) && TRUE;
-        else if(PyString_Check(retobj))
-            retval = PyString_GET_SIZE(retobj) && TRUE;
+        else if(PyUnicode_Check(retobj)) /* XXX WTF */
+            retval = PyUnicode_GET_SIZE(retobj) && TRUE;
 
         Py_DECREF(retobj);
     }
@@ -722,12 +720,10 @@ pygtk_tree_selection_marshal_full(GtkTreeSelection *selection,
     Py_DECREF(pypath);
     if (retobj) {
         if(retobj == Py_None);
-        else if(PyInt_Check(retobj))
-            retval = PyInt_AsLong(retobj) && TRUE;
         else if(PyLong_Check(retobj))
             retval = PyLong_AsLongLong(retobj) && TRUE;
-        else if(PyString_Check(retobj))
-            retval = PyString_GET_SIZE(retobj) && TRUE;
+        else if(PyUnicode_Check(retobj)) /* XXX WTF */
+            retval = PyUnicode_GET_SIZE(retobj) && TRUE;
 
         Py_DECREF(retobj);
     }
@@ -891,7 +887,7 @@ _wrap_gtk_tree_model_rows_reordered(PyGObject *self, PyObject *args,
 
     if (py_path == Py_None ||
         (PyTuple_Check(py_path) && PyTuple_Size(py_path) == 0) ||
-        (PyString_Check(py_path) && PyString_Size(py_path) == 0))
+        (PyUnicode_Check(py_path) && PyUnicode_GET_LENGTH(py_path) == 0))
         path = gtk_tree_path_new();
     else
         path = pygtk_tree_path_from_pyobject(py_path);
@@ -933,9 +929,9 @@ _wrap_gtk_tree_model_rows_reordered(PyGObject *self, PyObject *args,
     for (i = 0; i < len_seq; i++) {
 	sitem = PySequence_GetItem(py_new_order, i);
 	Py_DECREF(sitem);
-	sitem = PyNumber_Int(sitem);
+	sitem = PyNumber_Long(sitem);
 	if (sitem)
-	    new_order[i] = (gint) PyInt_AsLong(sitem);
+	    new_order[i] = (gint) PyLong_AsLong(sitem);
 	else {
 	    PyErr_Clear();
 	    PyErr_SetString(PyExc_TypeError,
@@ -965,24 +961,11 @@ static PyNumberMethods _wrap_gtk_tree_model_tp_as_number = {
     (binaryfunc)0,
     (binaryfunc)0,
     (binaryfunc)0,
-    (binaryfunc)0,
     (ternaryfunc)0,
     (unaryfunc)0,
     (unaryfunc)0,
     (unaryfunc)0,
-    (inquiry)_wrap_gtk_tree_model_tp_nonzero,
-    (unaryfunc)0,
-    (binaryfunc)0,
-    (binaryfunc)0,
-    (binaryfunc)0,
-    (binaryfunc)0,
-    (binaryfunc)0,
-    (coercion)0,
-    (unaryfunc)0,
-    (unaryfunc)0,
-    (unaryfunc)0,
-    (unaryfunc)0,
-    (unaryfunc)0
+    (inquiry)_wrap_gtk_tree_model_tp_nonzero
 };
 %%
 override-slot GtkTreeModel.tp_as_mapping
@@ -1003,8 +986,8 @@ _wrap_gtk_tree_model_tp_getitem(PyGObject *self, PyObject *item)
                                          pyg_boxed_get(item, GtkTreeIter));
     }
 
-    if (PyInt_Check(item)) {
-	int value = PyInt_AsLong(item);
+    if (PyLong_Check(item)) {
+	int value = PyLong_AsLong(item);
 
 	if (value < 0) {
             PyObject *inverse;
@@ -1013,7 +996,7 @@ _wrap_gtk_tree_model_tp_getitem(PyGObject *self, PyObject *item)
 	     * we need to do an invertion.
 	     */
             value = _wrap_gtk_tree_model_tp_length(self) - -value;
-            inverse = PyInt_FromLong(value);
+            inverse = PyLong_FromLong(value);
             if (!inverse)
                 return NULL;
 
@@ -1050,8 +1033,8 @@ _wrap_gtk_tree_model_tp_setitem(PyGObject *self, PyObject *item,
     } else {
         GtkTreePath *path = NULL;
 
-	if (PyInt_Check(item)) {
-	    int value = PyInt_AsLong(item);
+	if (PyLong_Check(item)) {
+	    int value = PyLong_AsLong(item);
 
 	    if (value < 0) {
                 PyObject *inverse;
@@ -1060,7 +1043,7 @@ _wrap_gtk_tree_model_tp_setitem(PyGObject *self, PyObject *item,
 		 * we need to do an invertion.
 		 */
                 value = _wrap_gtk_tree_model_tp_length(self) - -value;
-                inverse = PyInt_FromLong(value);
+                inverse = PyLong_FromLong(value);
                 if (!inverse)
                     return -1;
 
@@ -1154,7 +1137,7 @@ pygtk_tree_sortable_sort_cb(GtkTreeModel *model, GtkTreeIter *iter1,
     pygtk_boxed_unref_shared(py_iter1);
     pygtk_boxed_unref_shared(py_iter2);
     if (retobj)
-        ret = PyInt_AsLong(retobj);
+        ret = PyLong_AsLong(retobj);
     if (PyErr_Occurred()) {
         PyErr_Print();
         ret = 0;
@@ -1428,24 +1411,29 @@ _pygtk_tree_iter_compare_func_wrapper__call(PyObject *self, PyObject *args, PyOb
                                      &PyGtkTreeIter_Type, &py_iter2))
         return NULL;
 
-    wrapper = (_PyGTKIterCompareFuncWrapper *) PyCObject_AsVoidPtr(self);
+    wrapper = (_PyGTKIterCompareFuncWrapper *) PyCapsule_GetPointer(self, NULL);
     result = (*wrapper->func) (GTK_TREE_MODEL(((PyGObject *) py_model)->obj),
                                pyg_boxed_get(py_iter1, GtkTreeIter),
                                pyg_boxed_get(py_iter2, GtkTreeIter),
                                wrapper->data);
 
-    return PyInt_FromLong(result);
+    return PyLong_FromLong(result);
 }
 
 static void
-_pygtk_tree_iter_compare_func_wrapper__destroy(void *wrapper_)
+_pygtk_tree_iter_compare_func_wrapper__destroy_wrapper(_PyGTKIterCompareFuncWrapper *wrapper)
 {
-    _PyGTKIterCompareFuncWrapper *wrapper = (_PyGTKIterCompareFuncWrapper *) wrapper_;
-
     if (wrapper->destroy)
         (*wrapper->destroy) (wrapper->data);
 
     g_slice_free(_PyGTKIterCompareFuncWrapper, wrapper);
+}
+
+static void
+_pygtk_tree_iter_compare_func_wrapper__destroy(PyObject *obj)
+{
+    _PyGTKIterCompareFuncWrapper *wrapper = (_PyGTKIterCompareFuncWrapper *)PyCapsule_GetPointer(obj, NULL);
+    _pygtk_tree_iter_compare_func_wrapper__destroy_wrapper(wrapper);
 }
 
 static PyObject *
@@ -1472,9 +1460,9 @@ _wrap_tree_iter_compare_func(GtkTreeIterCompareFunc func, gpointer data, GDestro
     wrapper->data = data;
     wrapper->destroy = destroy;
 
-    py_wrapper = PyCObject_FromVoidPtr(wrapper, _pygtk_tree_iter_compare_func_wrapper__destroy);
+    py_wrapper = PyCapsule_New(wrapper, NULL, _pygtk_tree_iter_compare_func_wrapper__destroy);
     if (!py_wrapper) {
-        _pygtk_tree_iter_compare_func_wrapper__destroy(wrapper);
+        _pygtk_tree_iter_compare_func_wrapper__destroy_wrapper(wrapper);
         return NULL;
     }
 
@@ -1655,12 +1643,12 @@ _wrap_gtk_list_store_set(PyGObject *self, PyObject *args)
         PyObject *py_column = PyTuple_GetItem(args, i);
         PyObject *py_value = PyTuple_GetItem(args, i + 1);
 
-        if (!PyInt_Check(py_column)) {
+        if (!PyLong_Check(py_column)) {
             PyErr_SetString(PyExc_TypeError,
                             "Expected numeric argument for column.");
             return NULL;
         }
-        column = PyInt_AsLong(py_column);
+        column = PyLong_AsLong(py_column);
         if (column < 0 ||
             column >= gtk_tree_model_get_n_columns(GTK_TREE_MODEL(self->obj))) {
             PyErr_SetString(PyExc_ValueError, "column number is out of range");
@@ -1930,12 +1918,12 @@ _wrap_gtk_list_store_reorder(PyGObject *self, PyObject *args)
     for (i = 0; i < length; i++) {
 	PyObject *item = PyList_GetItem(list, i);
 	int index;
-	if (!PyInt_Check(item)) {
+	if (!PyLong_Check(item)) {
 	    PyErr_SetString(PyExc_TypeError, "all items must be of type int");
 	    g_free(new_order);
 	    return NULL;
 	}
-	index = PyInt_AsLong(item);
+	index = PyLong_AsLong(item);
 	if (index < 0 || index >= length) {
 	    PyErr_SetString(PyExc_ValueError, "position index out of range");
 	    g_free(new_order);
@@ -2024,12 +2012,12 @@ _wrap_gtk_tree_store_set(PyGObject *self, PyObject *args)
         PyObject *py_column = PyTuple_GetItem(args, i);
         PyObject *py_value = PyTuple_GetItem(args, i + 1);
 
-        if (!PyInt_Check(py_column)) {
+        if (!PyLong_Check(py_column)) {
             PyErr_SetString(PyExc_TypeError,
                             "Expected numeric argument for column.");
             return NULL;
         }
-        column = PyInt_AsLong(py_column);
+        column = PyLong_AsLong(py_column);
         if (column < 0 ||
             column >= gtk_tree_model_get_n_columns(GTK_TREE_MODEL(self->obj))) {
             PyErr_SetString(PyExc_ValueError, "column number is out of range");
@@ -3084,12 +3072,12 @@ _wrap_gtk_tree_store_reorder(PyGObject *self, PyObject *args, PyObject *kwargs)
     for (i = 0; i < slen; i++) {
 	PyObject *item = PyList_GetItem(list, i);
 	int index;
-	if (!PyInt_Check(item)) {
+	if (!PyLong_Check(item)) {
 	    PyErr_SetString(PyExc_TypeError, "all items must be of type int");
 	    g_free(new_order);
 	    return NULL;
 	}
-	index = PyInt_AsLong(item);
+	index = PyLong_AsLong(item);
 	if (index < 0 || index >= slen) {
 	    PyErr_SetString(PyExc_ValueError, "position index out of range");
 	    g_free(new_order);
@@ -3137,12 +3125,12 @@ _wrap_gtk_tree_model_get(PyGObject *self, PyObject *args)
 	gint column;
 	PyObject *py_column = PyTuple_GetItem(args, i+1);
 
-	if (!PyInt_Check(py_column)) {
+	if (!PyLong_Check(py_column)) {
 	    PyErr_SetString(PyExc_TypeError, "column numbers must be ints");
 	    Py_DECREF(ret);
 	    return NULL;
 	}
-	column = PyInt_AsLong(py_column);
+	column = PyLong_AsLong(py_column);
 	if (column < 0 || column >= n_columns) {
 	    PyErr_SetString(PyExc_ValueError, "column number is out of range");
 	    Py_DECREF(ret);
@@ -3416,8 +3404,8 @@ pygtk_set_search_equal_func_marshal(GtkTreeModel *model,
     state = pyg_gil_state_ensure();
 
     py_model = pygobject_new((GObject *)model);
-    py_column = PyInt_FromLong(column);
-    py_key = PyString_FromString(key);
+    py_column = PyLong_FromLong(column);
+    py_key = PyUnicode_FromString(key);
     py_iter = pyg_boxed_new(GTK_TYPE_TREE_ITER, iter,  FALSE, FALSE);
 
     if (cunote->data)

@@ -5,6 +5,7 @@
   (parent "GAppLaunchContext")
   (c-name "GdkAppLaunchContext")
   (gtype-id "GDK_TYPE_APP_LAUNCH_CONTEXT")
+  (heaptype #t)
 )
 
 (define-object Colormap

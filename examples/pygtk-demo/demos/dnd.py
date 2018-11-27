@@ -10,7 +10,7 @@ pygtk.require('2.0')
 import gtk
 import gobject
 
-from dndpixmap import drag_icon_xpm, trashcan_open_xpm, trashcan_closed_xpm
+from .dndpixmap import drag_icon_xpm, trashcan_open_xpm, trashcan_closed_xpm
 
 TARGET_STRING = 0
 TARGET_ROOTWIN = 1
@@ -91,7 +91,7 @@ class DragAndDropDemo(gtk.Window):
 
     def label_drag_data_received(self, w, context, x, y, data, info, time):
         if data and data.format == 8:
-            print 'Received "%s" in label' % data.data
+            print('Received "%s" in label' % data.data)
             context.finish(True, False, time)
         else:
             context.finish(False, False, time)
@@ -107,21 +107,21 @@ class DragAndDropDemo(gtk.Window):
             self.popup_timer = 0
 
     def popup_motion(self, w, context, x, y, time):
-        print 'popup_motion'
+        print('popup_motion')
         if not self.in_popup:
             self.in_popup = True
             if self.popdown_timer:
-                print 'removed popdown'
+                print('removed popdown')
                 gobject.source_remove(self.popdown_timer)
                 self.popdown_timer = 0
         return True
 
     def popup_leave(self, w, context, time):
-        print 'popup_leave'
+        print('popup_leave')
         if self.in_popup:
             self.in_popup = False
             if not self.popdown_timer:
-                print 'added popdown'
+                print('added popdown')
                 self.popdown_timer = gobject.timeout_add(500, self.popdown_cb)
 
     def popup_cb(self):
@@ -143,12 +143,12 @@ class DragAndDropDemo(gtk.Window):
             self.popup_win.present()
             self.popped_up = True
         self.popdown_timer = gobject.timeout_add(500, self.popdown_cb)
-        print 'added popdown'
+        print('added popdown')
         self.popup_timer = 0
         return False
 
     def popdown_cb(self):
-        print 'popdown'
+        print('popdown')
         #if self.in_popup:
         #    return True
         self.popdown_timer = 0
@@ -157,7 +157,7 @@ class DragAndDropDemo(gtk.Window):
         return False
 
     def target_drag_leave(self, img, context, time):
-        print 'leave'
+        print('leave')
         self.have_drag = False
         img.set_from_pixmap(self.trashcan_closed, self.trashcan_closed_mask)
 
@@ -166,16 +166,16 @@ class DragAndDropDemo(gtk.Window):
             self.have_drag = True
             img.set_from_pixmap(self.trashcan_open, self.trashcan_open_mask)
         source_widget = context.get_source_widget()
-        print 'motion, source ',
+        print('motion, source ', end=' ')
         if source_widget:
-            print source_widget.__class__.__name__
+            print(source_widget.__class__.__name__)
         else:
-            print 'unknown'
+            print('unknown')
         context.drag_status(context.suggested_action, time)
         return True
 
     def target_drag_drop(self, img, context, x, y, time):
-        print 'drop'
+        print('drop')
         self.have_drag = False
         img.set_from_pixmap(self.trashcan_closed, self.trashcan_closed_mask)
         if context.targets:
@@ -185,19 +185,19 @@ class DragAndDropDemo(gtk.Window):
 
     def target_drag_data_received(self, img, context, x, y, data, info, time):
         if data.format == 8:
-            print 'Received "%s" in trashcan' % data.data
+            print('Received "%s" in trashcan' % data.data)
             context.finish(True, False, time)
         else:
             context.finish(False, False, time)
 
     def source_drag_data_get(self, btn, context, selection_data, info, time):
         if info == TARGET_ROOTWIN:
-            print 'I was dropped on the rootwin'
+            print('I was dropped on the rootwin')
         else:
             selection_data.set(selection_data.target, 8, "I'm Data!")
 
     def source_drag_data_delete(self, btn, context, data):
-        print 'Delete the data!'
+        print('Delete the data!')
 
 def main():
     DragAndDropDemo()

@@ -76,7 +76,7 @@ typedef struct {
     PyObject_HEAD
     PangoAttribute *attr;
 } PyPangoAttribute;
-staticforward PyTypeObject PyPangoAttribute_Type;
+static PyTypeObject PyPangoAttribute_Type;
 
 static PyObject *
 pypango_attr_new(PangoAttribute *attr, guint start, guint end)
@@ -135,9 +135,9 @@ pypango_attr_get_index(PyPangoAttribute *self, void *closure)
     gboolean is_end = GPOINTER_TO_INT(closure) != 0;
 
     if (is_end)
-	return PyInt_FromLong(self->attr->end_index);
+	return PyLong_FromLong(self->attr->end_index);
     else
-	return PyInt_FromLong(self->attr->start_index);
+	return PyLong_FromLong(self->attr->start_index);
 }
 
 static int
@@ -146,7 +146,7 @@ pypango_attr_set_index(PyPangoAttribute *self, PyObject *value, void *closure)
     gboolean is_end = GPOINTER_TO_INT(closure) != 0;
     gint val;
 
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred()) {
 	PyErr_Clear();
 	PyErr_SetString(PyExc_TypeError, "index must be an integer");
@@ -162,7 +162,7 @@ pypango_attr_set_index(PyPangoAttribute *self, PyObject *value, void *closure)
 static PyObject *
 pypango_attr_get_type(PyPangoAttribute *self, void *closure)
 {
-    return PyInt_FromLong(self->attr->klass->type);
+    return PyLong_FromLong(self->attr->klass->type);
 }
 
 static PyGetSetDef pypango_attr_getsets[] = {
@@ -193,7 +193,7 @@ pypango_attr_tp_getattr(PyPangoAttribute *self, char *attr)
 	if (!strcmp(attr, "__members__"))
 	    return Py_BuildValue("[s]", "value");
 	if (!strcmp(attr, "value"))
-	    return PyString_FromString(((PangoAttrString *)attribute)->value);
+	    return PyUnicode_FromString(((PangoAttrString *)attribute)->value);
 	break;
     case PANGO_ATTR_STYLE:
     case PANGO_ATTR_WEIGHT:
@@ -209,7 +209,7 @@ pypango_attr_tp_getattr(PyPangoAttribute *self, char *attr)
 	if (!strcmp(attr, "__members__"))
 	    return Py_BuildValue("[s]", "value");
 	if (!strcmp(attr, "value"))
-	    return PyInt_FromLong(((PangoAttrInt *)attribute)->value);
+	    return PyLong_FromLong(((PangoAttrInt *)attribute)->value);
 	break;
     case PANGO_ATTR_FONT_DESC:
 	if (!strcmp(attr, "__members__"))
@@ -256,15 +256,14 @@ pypango_attr_tp_getattr(PyPangoAttribute *self, char *attr)
 	break;
     }
 
-    name = PyString_FromString(attr);
+    name = PyUnicode_FromString(attr);
     ret = PyObject_GenericGetAttr((PyObject *)self, name);
     Py_DECREF(name);
     return ret;
 }
 
 static PyTypeObject PyPangoAttribute_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,					/* ob_size */
+    PyVarObject_HEAD_INIT(NULL, 0)
     "pango.Attribute",			/* tp_name */
     sizeof(PyPangoAttribute),		/* tp_basicsize */
     0,					/* tp_itemsize */
@@ -273,7 +272,12 @@ static PyTypeObject PyPangoAttribute_Type = {
     (printfunc)0,			/* tp_print */
     (getattrfunc)pypango_attr_tp_getattr,	/* tp_getattr */
     (setattrfunc)0,			/* tp_setattr */
-    (cmpfunc)pypango_attr_compare,	/* tp_compare */
+    /*
+    XXX jurica
+    (cmpfunc)pypango_attr_compare, 
+    */	/* tp_compare */
+
+    (PyAsyncMethods *)0, /* tp_as_async */
     (reprfunc)0,			/* tp_repr */
     0,					/* tp_as_number */
     0,					/* tp_as_sequence */
@@ -314,7 +318,7 @@ typedef struct {
     PyObject_HEAD
     PangoAttrIterator *iter;
 } PyPangoAttrIterator;
-staticforward PyTypeObject PyPangoAttrIterator_Type;
+static PyTypeObject PyPangoAttrIterator_Type;
 
 static PyObject *
 pypango_attr_iterator_new(PangoAttrIterator *iter)
@@ -461,8 +465,7 @@ static PyMethodDef pypango_attr_iterator_methods[] = {
 };
 
 static PyTypeObject PyPangoAttrIterator_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,					/* ob_size */
+    PyVarObject_HEAD_INIT(NULL, 0)
     "pango.AttrIterator",			/* tp_name */
     sizeof(PyPangoAttrIterator),		/* tp_basicsize */
     0,					/* tp_itemsize */
@@ -471,7 +474,12 @@ static PyTypeObject PyPangoAttrIterator_Type = {
     (printfunc)0,			/* tp_print */
     (getattrfunc)0,			/* tp_getattr */
     (setattrfunc)0,			/* tp_setattr */
-    (cmpfunc)pypango_attr_iterator_compare,	/* tp_compare */
+    /*
+    XXX jurica
+    (cmpfunc)pypango_attr_iterator_compare,
+    */	/* tp_compare */
+
+    (PyAsyncMethods *)0, /* tp_as_async */
     (reprfunc)0,			/* tp_repr */
     0,					/* tp_as_number */
     0,					/* tp_as_sequence */
@@ -1120,7 +1128,7 @@ _wrap_pango_glyph_string_get_logical_widths(PyObject *self, PyObject *args,
 					  logical_widths);
     ret = PyTuple_New(slen);
     for (i = 0; i < slen; i++) {
-	PyObject *item = PyInt_FromLong(logical_widths[i]);
+	PyObject *item = PyLong_FromLong(logical_widths[i]);
 
 	PyTuple_SetItem(ret, i, item);
     }
@@ -1468,7 +1476,7 @@ _wrap_PANGO_ASCENT(PyObject *self, PyObject *args, PyObject *kwargs)
 	&& PyArg_ParseTuple(py_rect, "iiii:ASCENT", &rect.x, &rect.y,
 			     &rect.width, &rect.height)) {
 	ret = PANGO_ASCENT(rect);
-	return PyInt_FromLong(ret);
+	return PyLong_FromLong(ret);
     }
     PyErr_Clear();
     PyErr_SetString(PyExc_ValueError, "rect must be a 4-tuple of integers");
@@ -1489,7 +1497,7 @@ _wrap_PANGO_DESCENT(PyObject *self, PyObject *args, PyObject *kwargs)
 	&& PyArg_ParseTuple(py_rect, "iiii:DESCENT", &rect.x, &rect.y,
 			     &rect.width, &rect.height)) {
 	ret = PANGO_DESCENT(rect);
-	return PyInt_FromLong(ret);
+	return PyLong_FromLong(ret);
     }
     PyErr_Clear();
     PyErr_SetString(PyExc_ValueError, "rect must be a 4-tuple of integers");
@@ -1510,7 +1518,7 @@ _wrap_PANGO_LBEARING(PyObject *self, PyObject *args, PyObject *kwargs)
 	&& PyArg_ParseTuple(py_rect, "iiii:LBEARING", &rect.x, &rect.y,
 			     &rect.width, &rect.height)) {
 	ret = PANGO_LBEARING(rect);
-	return PyInt_FromLong(ret);
+	return PyLong_FromLong(ret);
     }
     PyErr_Clear();
     PyErr_SetString(PyExc_ValueError, "rect must be a 4-tuple of integers");
@@ -1531,7 +1539,7 @@ _wrap_PANGO_RBEARING(PyObject *self, PyObject *args, PyObject *kwargs)
 	&& PyArg_ParseTuple(py_rect, "iiii:RBEARING", &rect.x, &rect.y,
 			     &rect.width, &rect.height)) {
 	ret = PANGO_RBEARING(rect);
-	return PyInt_FromLong(ret);
+	return PyLong_FromLong(ret);
     }
     PyErr_Clear();
     PyErr_SetString(PyExc_ValueError, "rect must be a 4-tuple of integers");
@@ -1640,7 +1648,7 @@ _wrap_pango_font_face_list_sizes(PyGObject *self)
     py_sizes = PyTuple_New(n_sizes);
 
     for (i = 0; i < n_sizes; i++)
-	PyTuple_SetItem(py_sizes, i, PyInt_FromLong(sizes[i]));
+	PyTuple_SetItem(py_sizes, i, PyLong_FromLong(sizes[i]));
 
     g_free(sizes);
 
@@ -1883,7 +1891,7 @@ _wrap_pango_layout_line_index_to_x(PyObject *self, PyObject *args,
     pango_layout_line_index_to_x(pyg_boxed_get(self, PangoLayoutLine),
                                  index, PyObject_IsTrue(trailing),
                                  &x_pos);
-    return PyInt_FromLong(x_pos);
+    return PyLong_FromLong(x_pos);
 }
 %%
 override pango_layout_line_get_extents noargs

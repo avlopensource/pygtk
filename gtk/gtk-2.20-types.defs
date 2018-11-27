@@ -6,6 +6,7 @@
   (parent "GtkContainer")
   (c-name "GtkToolItemGroup")
   (gtype-id "GTK_TYPE_TOOL_ITEM_GROUP")
+  (heaptype #t)
 )
 
 (define-object ToolPalette
@@ -13,6 +14,7 @@
   (parent "GtkContainer")
   (c-name "GtkToolPalette")
   (gtype-id "GTK_TYPE_TOOL_PALETTE")
+  (heaptype #t)
 )
 
 (define-object CellRendererSpinner
@@ -20,6 +22,7 @@
   (parent "GtkCellRenderer")
   (c-name "GtkCellRendererSpinner")
   (gtype-id "GTK_TYPE_CELL_RENDERER_SPINNER")
+  (heaptype #t)
 )
 
 (define-object OffscreenWindow
@@ -27,6 +30,7 @@
   (parent "GtkWindow")
   (c-name "GtkOffscreenWindow")
   (gtype-id "GTK_TYPE_OFFSCREEN_WINDOW")
+  (heaptype #t)
 )
 
 (define-object Spinner
@@ -34,6 +38,7 @@
   (parent "GtkDrawingArea")
   (c-name "GtkSpinner")
   (gtype-id "GTK_TYPE_SPINNER")
+  (heaptype #t)
 )
 
 ;; Enumerations and flags ...

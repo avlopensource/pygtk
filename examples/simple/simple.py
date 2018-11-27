@@ -9,7 +9,7 @@ pygtk.require('2.0')
 import gobject, gtk
 
 def hello(*args):
-    print "Hello World"
+    print("Hello World")
     window.destroy()
 
 def destroy(*args):

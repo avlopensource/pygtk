@@ -373,7 +373,7 @@ _wrap_gdk_draw_indexed_image(PyGObject *self, PyObject *args, PyObject *kwargs)
     n_colors = PyList_Size(pycolors);
     colors = g_new0(guint32, n_colors);
     for (i = 0; i < n_colors; i++)
-	colors[i] = PyInt_AsLong(PyList_GetItem(pycolors, i));
+	colors[i] = PyLong_AsLong(PyList_GetItem(pycolors, i));
     cmap = gdk_rgb_cmap_new(colors, n_colors);
     g_free(colors);
     gdk_draw_indexed_image(GDK_DRAWABLE(self->obj), GDK_GC(gc->obj), x, y,

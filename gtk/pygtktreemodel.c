@@ -235,7 +235,7 @@ pygtk_generic_tree_model_get_flags(GtkTreeModel *tree_model)
     py_ret = PyObject_CallMethod(self, METHOD_PREFIX "get_flags", "");
     Py_DECREF(self);
     if (py_ret) {
-	ret = PyInt_AsLong(py_ret);
+	ret = PyLong_AsLong(py_ret);
 	Py_DECREF(py_ret);
     } else {
 	PyErr_Print();
@@ -266,7 +266,7 @@ pygtk_generic_tree_model_get_n_columns(GtkTreeModel *tree_model)
     py_ret = PyObject_CallMethod(self, METHOD_PREFIX "get_n_columns", "");
     Py_DECREF(self);
     if (py_ret) {
-	ret = PyInt_AsLong(py_ret);
+	ret = PyLong_AsLong(py_ret);
 	Py_DECREF(py_ret);
     } else {
 	PyErr_Print();
@@ -597,7 +597,7 @@ pygtk_generic_tree_model_iter_n_children(GtkTreeModel *tree_model,
 				 "(O)", py_iter);
     Py_DECREF(self);
     if (py_ret) {
-	ret = PyInt_AsLong(py_ret);
+	ret = PyLong_AsLong(py_ret);
 
 	Py_DECREF(py_ret);
     } else {

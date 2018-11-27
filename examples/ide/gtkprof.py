@@ -19,9 +19,9 @@ class PStatWindow(gtk.Window):
         self.add(box1)
         box1.show()
 
-        text = `stats.total_calls` + " function calls "
+        text = repr(stats.total_calls) + " function calls "
         if stats.total_calls != stats.prim_calls:
-            text = text + "( " + `stats.prim_calls` + " primitive calls) "
+            text = text + "( " + repr(stats.prim_calls) + " primitive calls) "
         text = text + "in " + fpformat.fix(stats.total_tt, 3) + " CPU seconds"
         label = gtk.Label(text)
         label.set_padding(2, 2)
@@ -78,7 +78,7 @@ class PStatWindow(gtk.Window):
         if self.stats.fcn_list:
             return self.stats.fcn_list[:]
         else:
-            return self.stats.stats.keys()
+            return list(self.stats.stats.keys())
 
     def insert_stats(self):
         list = self.get_stats_list()
@@ -87,9 +87,9 @@ class PStatWindow(gtk.Window):
             model = self.list.get_model()
             for func in list:
                 cc,nc,tt,ct,callers = self.stats.stats[func]
-                row[0] = `nc`
+                row[0] = repr(nc)
                 if nc != cc:
-                    row[0] = row[0] + '/' + `cc`
+                    row[0] = row[0] + '/' + repr(cc)
                 row[1] = fpformat.fix(tt, 3)
                 if nc == 0:
                     row[2] = ''
@@ -101,7 +101,7 @@ class PStatWindow(gtk.Window):
                 else:
                     row[4] = fpformat.fix(ct/cc, 3)
                 file,line,name = func
-                row[5] = file + ":" + `line` + "(" + name + \
+                row[5] = file + ":" + repr(line) + "(" + name + \
                          ")"
                 self.list.get_model().append(row)
         return
@@ -124,7 +124,7 @@ def run_file(file):
 if __name__ == '__main__':
     import sys, os
     if not sys.argv[1:]:
-        print "usage: gtkprof.py scriptfile [args ...]"
+        print("usage: gtkprof.py scriptfile [args ...]")
         sys.exit(2)
     filename = sys.argv[1]
     del sys.argv[0]

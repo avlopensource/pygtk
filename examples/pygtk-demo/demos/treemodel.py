@@ -51,7 +51,7 @@ class MyTreeModel(gtk.GenericTreeModel):
     def on_get_value(self, node, column):
         '''returns the value stored in a particular column for the node'''
         assert column == 0
-        return `node`
+        return repr(node)
     def on_iter_next(self, node):
         '''returns the next node at this level of the tree'''
         if node != None:

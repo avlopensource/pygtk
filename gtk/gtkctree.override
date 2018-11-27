@@ -88,13 +88,13 @@ _wrap_gtk_ctree_new_with_titles(PyGObject *self, PyObject *args,
             PyObject *item = PySequence_GetItem(py_titles, i);
 
             Py_DECREF(item);
-            if (!PyString_Check(item) && !PyUnicode_Check(item)) {
+            if (!PyUnicode_Check(item)) {
                 PyErr_SetString(PyExc_TypeError,
-                                "sequence item not a string or unicode object");
+                                "sequence item not a string object");
                 g_free(titles);
                 return -1;
             }
-            titles[i] = PyString_AsString(item);
+            titles[i] = PyUnicode_AsUTF8(item);
         }
         self->obj = (GObject *)gtk_ctree_new_with_titles(columns,
                                                 tree_column, titles);
@@ -215,13 +215,13 @@ _wrap_gtk_ctree_insert_node(PyGObject *self, PyObject *args,
         PyObject *item = PySequence_GetItem(py_text, i);
 
         Py_DECREF(item);
-        if (!PyString_Check(item) && !PyUnicode_Check(item)) {
+        if (!PyUnicode_Check(item)) {
             PyErr_SetString(PyExc_TypeError,
-                            "sequence item not a string or unicode object");
+                            "sequence item not a string object");
             g_free(text);
             return NULL;
         }
-        text[i] = PyString_AsString(item);
+        text[i] = PyUnicode_AsUTF8(item);
     }
     ret = gtk_ctree_insert_node(GTK_CTREE(self->obj), parent, sibling, text,
                                 spacing, pixmap_closed, mask_closed,
@@ -323,7 +323,7 @@ _wrap_gtk_ctree_node_get_text(PyGObject *self, PyObject *args,
         PyErr_SetString(PyExc_ValueError, "can't get text value");
         return NULL;
     }
-    return PyString_FromString(text);
+    return PyUnicode_FromString(text);
 }
 %%
 override gtk_ctree_node_get_pixmap kwargs
@@ -517,11 +517,11 @@ _wrap_gtk_ctree_node_tp_getattr(PyGPointer *self, char *attr)
         }
         return ret;
     } else if (!strcmp(attr, "level"))
-        return PyInt_FromLong(GTK_CTREE_ROW(pyg_pointer_get(self, GtkCTreeNode))->level);
+        return PyLong_FromLong(GTK_CTREE_ROW(pyg_pointer_get(self, GtkCTreeNode))->level);
     else if (!strcmp(attr, "is_leaf"))
-        return PyInt_FromLong(GTK_CTREE_ROW(pyg_pointer_get(self, GtkCTreeNode))->is_leaf);
+        return PyLong_FromLong(GTK_CTREE_ROW(pyg_pointer_get(self, GtkCTreeNode))->is_leaf);
     else if (!strcmp(attr, "expanded"))
-        return PyInt_FromLong(GTK_CTREE_ROW(pyg_pointer_get(self, GtkCTreeNode))->expanded);
+        return PyLong_FromLong(GTK_CTREE_ROW(pyg_pointer_get(self, GtkCTreeNode))->expanded);
     PyErr_SetString(PyExc_AttributeError, attr);
     return NULL;
 }

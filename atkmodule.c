@@ -33,16 +33,26 @@ void _pyatk_register_boxed_types(void);
 
 extern PyMethodDef pyatk_functions[];
 
-DL_EXPORT(void)
-initatk(void)
+static struct PyModuleDef atkmodule_def = {
+    PyModuleDef_HEAD_INIT,
+    "atk",
+    NULL,
+    -1,
+    pyatk_functions
+};
+
+PyMODINIT_FUNC
+PyInit_atk(void)
 {
     PyObject *m, *d;
 	
-    init_pygobject ();
+    if (!pygobject_init(-1, -1, -1))
+	return NULL;
 
-    m = Py_InitModule ("atk", pyatk_functions);
+    m = PyModule_Create(&atkmodule_def);
     d = PyModule_GetDict (m);
     _pyatk_register_boxed_types();	
     pyatk_register_classes (d);
     pyatk_add_constants(m, "ATK_");    
+    return m;
 }

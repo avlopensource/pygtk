@@ -16,7 +16,7 @@ import gtk
     COLUMN_NUMBER,
     COLUMN_SEVERITY,
     COLUMN_DESCRIPTION
-) = range(4)
+) = list(range(4))
 
 data = \
 ((False, 60482, 'Normal', 'scrollable notebooks and hidden tabs'),

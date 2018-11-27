@@ -137,7 +137,7 @@ _wrap_gtk_widget_path(PyGObject *self)
     PyObject *result;
 
     gtk_widget_path(GTK_WIDGET(self->obj), &length, &path, &path_reversed);
-    result = PyString_FromString(path);
+    result = PyUnicode_FromString(path);
     g_free(path);
     g_free(path_reversed);
 
@@ -155,7 +155,7 @@ _wrap_gtk_widget_class_path(PyGObject *self)
 
     gtk_widget_class_path(GTK_WIDGET(self->obj), &length, &path,
                           &path_reversed);
-    result = PyString_FromString(path);
+    result = PyUnicode_FromString(path);
     g_free(path);
     g_free(path_reversed);
 
@@ -568,7 +568,7 @@ _wrap_gtk_widget_get_activate_signal(PyObject *cls,
          signame = NULL;
          goto out;
      }
-     signame = PyString_FromString(query.signal_name);
+     signame = PyUnicode_FromString(query.signal_name);
 out:
      g_type_class_unref(klass);
      return signame;

@@ -51,22 +51,30 @@ _log_func(const gchar *log_domain,
 
 #endif
 
+static struct PyModuleDef pangomodule_def = {
+    PyModuleDef_HEAD_INIT,
+    "pango",
+    NULL,
+    -1,
+    pypango_functions
+};
 
-DL_EXPORT(void)
-initpango(void)
+PyMODINIT_FUNC
+PyInit_pango(void)
 {
     PyObject *m, *d;
     PyObject *warning;
 
     /* perform any initialisation required by the library here */
 
-    m = Py_InitModule("pango", pypango_functions);
+    m = PyModule_Create(&pangomodule_def);
     d = PyModule_GetDict(m);
 
-    init_pygobject_check(2, 11, 1);
+    if(!pygobject_init(2, 11, 1))
+	return NULL;
 
     /* set the default python encoding to utf-8 */
-    PyUnicode_SetDefaultEncoding("utf-8");
+    /* PyUnicode_SetDefaultEncoding("utf-8"); */
 
     pypango_register_classes(d);
     pypango_add_constants(m, "PANGO_");
@@ -86,7 +94,7 @@ initpango(void)
     PyModule_AddObject(m, "SCALE_XX_LARGE",
 		       PyFloat_FromDouble(PANGO_SCALE_XX_LARGE));    
     PyModule_AddObject(m, "SCALE",
-		       PyInt_FromLong(PANGO_SCALE));    
+		       PyLong_FromLong(PANGO_SCALE));    
 
     /* add anything else to the module dictionary (such as constants) */
     warning = PyErr_NewException("pango.PangoWarning", PyExc_Warning, NULL);
@@ -97,4 +105,6 @@ initpango(void)
     g_log_set_handler("Pango", G_LOG_LEVEL_CRITICAL|G_LOG_LEVEL_WARNING,
                       _log_func, warning);
 #endif
+
+    return m;
 }

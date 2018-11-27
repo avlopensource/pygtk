@@ -22,7 +22,7 @@ class SimpleListTreeModel(gtk.GenericTreeModel):
 
         # This is only needed to make the model gc-safe, since
         # leak_references is False.
-        self.__iters = range(0, len(values))
+        self.__iters = list(range(0, len(values)))
 
     def on_get_n_columns(self):
         return 0

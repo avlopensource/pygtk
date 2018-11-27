@@ -59,7 +59,7 @@ pylist_to_strv (PyObject *list,
             return FALSE;
         }
 
-        if (!PyString_Check (item))
+        if (!PyUnicode_Check (item))
         {
             Py_DECREF (item);
             g_strfreev (ret);
@@ -68,7 +68,7 @@ pylist_to_strv (PyObject *list,
             return FALSE;
         }
 
-        ret[i] = g_strdup (PyString_AsString (item));
+        ret[i] = g_strdup (PyUnicode_AsUTF8 (item));
         Py_DECREF (item);
     }
 
@@ -108,7 +108,7 @@ connect_many(GtkBuilder *builder, GObject *obj,
 
             PyErr_Clear();
 
-            name_obj = PyString_FromString(handler_name);
+            name_obj = PyUnicode_FromString(handler_name);
             PyList_Append(notify->missing_handlers, name_obj);
             Py_DECREF(name_obj);
 
@@ -243,7 +243,7 @@ _wrap_gtk_builder_add_objects_from_file(PyGObject *self,
     if (pyg_error_check(&error))
         return NULL;
     
-    return PyInt_FromLong(ret);
+    return PyLong_FromLong(ret);
 }
 
 %%
@@ -277,5 +277,5 @@ _wrap_gtk_builder_add_objects_from_string(PyGObject *self,
     if (pyg_error_check(&error))
         return NULL;
     
-    return PyInt_FromLong(ret);
+    return PyLong_FromLong(ret);
 }

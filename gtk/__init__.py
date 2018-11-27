@@ -39,7 +39,7 @@ if 'gtk._gtk' in sys.modules:
 else:
     from gtk import _gtk
 
-import gdk
+gdk = sys.modules['gtk.gdk']
 
 from gtk._lazyutils import LazyNamespace, LazyModule
 from gtk.deprecation import _Deprecated, _DeprecatedConstant
@@ -52,7 +52,7 @@ def _init():
 
         try:
             _gtk.init_check()
-        except RuntimeError, e:
+        except RuntimeError as e:
             import warnings
             warnings.warn(str(e), _gtk.Warning)
     finally:

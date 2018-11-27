@@ -26,6 +26,7 @@
   (parent "AtkObject")
   (c-name "AtkNoOpObject")
   (gtype-id "ATK_TYPE_NO_OP_OBJECT")
+  (heaptype #t)
 )
 
 (define-object ObjectFactory

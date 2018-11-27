@@ -11,7 +11,7 @@ class EditableLabel(gtk.Entry, gtk.Editable):
         self.set_text(text)
 
     def do_do_delete_text(self, start_pos, end_pos):
-        print "do_do_delete_text", start_pos, end_pos
+        print("do_do_delete_text", start_pos, end_pos)
         gtk.Entry.do_do_delete_text(self, start_pos, end_pos)
 
 gobject.type_register(EditableLabel)

@@ -81,7 +81,7 @@ class ImagesDemo(gtk.Window):
             pixbuf = gtk.gdk.pixbuf_new_from_file(GTKLOGO_IMAGE)
             image.set_from_pixbuf(pixbuf)
 
-        except gobject.GError, error:
+        except gobject.GError as error:
 
             # This code shows off error handling. You can just use
             # gtk_image_new_from_file() instead if you don't want to report
@@ -199,7 +199,7 @@ class ImagesDemo(gtk.Window):
                 buf = self.image_stream.read(256)
                 bytes_read = len(buf)
 
-            except IOError, error:
+            except IOError as error:
                 dialog = gtk.MessageDialog(self,
                     gtk.DIALOG_DESTROY_WITH_PARENT,
                     gtk.MESSAGE_ERROR,
@@ -270,7 +270,7 @@ class ImagesDemo(gtk.Window):
             try:
                 self.image_stream = open(ALPHA_IMAGE, "rb")
 
-            except IOError, error:
+            except IOError as error:
                 error_message = "Unable to open image file 'alphatest.png' : %s"
 
                 dialog = gtk.MessageDialog(self,

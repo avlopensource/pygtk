@@ -217,7 +217,7 @@ gtkunixprint-types.defs: $(GTKUNIXPRINT_TYPES_DEFS) Makefile
 gdk.c: gdk-types.defs gdk.defs $(GDK_OVERRIDES)
 gtk.c: gdk-types.defs gtk-types.defs gtk.defs gdk-types.defs $(GTK_OVERRIDES)
 _gtk_la_CFLAGS = $(PYCAIRO_CFLAGS) $(GTK_CFLAGS)
-_gtk_la_LDFLAGS = $(common_ldflags) -export-symbols-regex init_gtk
+_gtk_la_LDFLAGS = $(common_ldflags) -export-symbols-regex PyInit__gtk
 _gtk_la_LIBADD = $(GTK_LIBS)
 _gtk_la_SOURCES = 		\
 	gtk-types.c 		\
@@ -243,7 +243,7 @@ EXTRA_DIST += $(LIBGLADE_DEFS) libglade.override
 libglade.c: $(LIBGLADE_DEFS) libglade.override gdk-types.defs gtk-types.defs
 glade_la_CFLAGS = $(LIBGLADE_CFLAGS)
 glade_la_LIBADD = $(LIBGLADE_LIBS)
-glade_la_LDFLAGS = $(common_ldflags) -export-symbols-regex initglade
+glade_la_LDFLAGS = $(common_ldflags) -export-symbols-regex PyInit_glade
 glade_la_SOURCES = libglademodule.c
 nodist_glade_la_SOURCES = libglade.c
 if BUILD_LIBGLADE
@@ -270,7 +270,7 @@ gtkunixprint.c:						\
 
 gtkunixprint_la_CFLAGS = $(PYCAIRO_CFLAGS) $(GTKUNIXPRINT_CFLAGS)
 gtkunixprint_la_LIBADD = $(GTKUNIXPRINT_LIBS)
-gtkunixprint_la_LDFLAGS = $(common_ldflags) -export-symbols-regex initgtkunixprint
+gtkunixprint_la_LDFLAGS = $(common_ldflags) -export-symbols-regex PyInit_gtkunixprint
 gtkunixprint_la_SOURCES = gtkunixprintmodule.c
 nodist_gtkunixprint_la_SOURCES = gtkunixprint.c
 if BUILD_GTKUNIXPRINT

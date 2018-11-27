@@ -23,7 +23,7 @@ import gtk
     VISIBLE_COLUMN,
     WORLD_COLUMN,
     NUM_COLUMNS
-) = range(9)
+) = list(range(9))
 
 #   tree data
 january = \

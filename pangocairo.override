@@ -4,10 +4,9 @@ headers
 #define NO_IMPORT_PYGOBJECT
 #include <pygobject.h>
 #include <pango/pangocairo.h>
-#include <pycairo.h>
+#define PYCAIRO_NO_IMPORT
+#include <py3cairo.h>
 
-
-extern Pycairo_CAPI_t *Pycairo_CAPI;
 
 GType pypango_layout_line_type; /*  See bug 305975 */
 
@@ -118,11 +117,16 @@ _wrap_pango_cairo_update_context(PyGObject *self, PyObject *args, PyObject *kwar
 static PyObject *
 _wrap_pango_cairo_create_layout(PyGObject *self)
 {
-    PangoLayout *ret;
+    PangoLayout *layout;
+    PyObject *ret;
 
-    ret = pango_cairo_create_layout(PycairoContext_GET(self));
+    layout = pango_cairo_create_layout(PycairoContext_GET(self));
     /* pygobject_new handles NULL checking */
-    return pygobject_new((GObject *)ret);
+    ret = pygobject_new((GObject *)layout);
+    if (layout)
+	g_object_unref(layout);
+
+    return ret;
 }
 
 static PyObject *
@@ -268,8 +272,7 @@ static PyMethodDef _PyCairoContext_methods[] = {
 
 
 PyTypeObject PyPangoCairoContext_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,                                  /* ob_size */
+    PyVarObject_HEAD_INIT(NULL, 0)
     "pangocairo.CairoContext",          /* tp_name */
     0,           			/* tp_basicsize */
     0,                                  /* tp_itemsize */
@@ -278,7 +281,7 @@ PyTypeObject PyPangoCairoContext_Type = {
     (printfunc)0,                       /* tp_print */
     (getattrfunc)0,                     /* tp_getattr */
     (setattrfunc)0,                     /* tp_setattr */
-    (cmpfunc)0,                         /* tp_compare */
+    (PyAsyncMethods *)0,                /* tp_as_async */
     (reprfunc)0,                        /* tp_repr */
     0,                                  /* tp_as_number */
     0,                                  /* tp_as_sequence */

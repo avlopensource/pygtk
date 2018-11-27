@@ -58,10 +58,10 @@ _wrap_gdk_rectangle_getitem(PyGBoxed *self, Py_ssize_t pos)
     }
     rect = pyg_boxed_get(self, GdkRectangle);
     switch (pos) {
-    case 0: return PyInt_FromLong(rect->x);
-    case 1: return PyInt_FromLong(rect->y);
-    case 2: return PyInt_FromLong(rect->width);
-    case 3: return PyInt_FromLong(rect->height);
+    case 0: return PyLong_FromLong(rect->x);
+    case 1: return PyLong_FromLong(rect->y);
+    case 2: return PyLong_FromLong(rect->width);
+    case 3: return PyLong_FromLong(rect->height);
     default:
         g_assert_not_reached();
         return NULL;
@@ -79,7 +79,7 @@ _wrap_gdk_rectangle_setitem(PyGBoxed *self, Py_ssize_t pos, PyObject *value)
         return -1;
     }
     rect = pyg_boxed_get(self, GdkRectangle);
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     switch(pos) {
@@ -109,7 +109,7 @@ _wrap_gdk_rectangle__set_x(PyGBoxed *self, PyObject *value, void *closure)
 {
     gint val;
 
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     pyg_boxed_get(self, GdkRectangle)->x = val;
@@ -122,7 +122,7 @@ _wrap_gdk_rectangle__set_y(PyGBoxed *self, PyObject *value, void *closure)
 {
     gint val;
 
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     pyg_boxed_get(self, GdkRectangle)->y = val;
@@ -135,7 +135,7 @@ _wrap_gdk_rectangle__set_width(PyGBoxed *self, PyObject *value, void *closure)
 {
     gint val;
 
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     pyg_boxed_get(self, GdkRectangle)->width = val;
@@ -148,7 +148,7 @@ _wrap_gdk_rectangle__set_height(PyGBoxed *self, PyObject *value, void *closure)
 {
     gint val;
 
-    val = PyInt_AsLong(value);
+    val = PyLong_AsLong(value);
     if (PyErr_Occurred())
         return -1;
     pyg_boxed_get(self, GdkRectangle)->height = val;
@@ -253,6 +253,6 @@ static PyObject *
 _wrap_gdk_rectangle_tp_repr(PyGBoxed *self)
 {
     GdkRectangle *rect = pyg_boxed_get(self, GdkRectangle);
-    return PyString_FromFormat("%s(%d, %d, %d, %d)", self->ob_type->tp_name,
+    return PyUnicode_FromFormat("%s(%d, %d, %d, %d)", Py_TYPE(self)->tp_name,
                                rect->x, rect->y, rect->width, rect->height);
 }

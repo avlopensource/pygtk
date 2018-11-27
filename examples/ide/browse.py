@@ -62,7 +62,7 @@ class BrowseVariables(gtk.VBox):
             return True
         citer = model.iter_children(riter)
         model.remove(citer)
-        keylist = dict.keys()
+        keylist = list(dict.keys())
         keylist.sort()
         for key in keylist:
             obj = dict[key]

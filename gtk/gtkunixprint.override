@@ -33,8 +33,8 @@ headers
 #include <gtk/gtk.h>
 #include <gtk/gtkunixprint.h>
 
-#include <pycairo.h>
-extern Pycairo_CAPI_t *Pycairo_CAPI;
+#define PYCAIRO_NO_IMPORT
+#include <py3cairo.h>
 
 #ifndef GTK_TYPE_PRINT_CAPABILITIES
 GType gtk_print_capabilites_get_type (void) G_GNUC_CONST;

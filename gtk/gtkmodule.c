@@ -30,8 +30,7 @@
 #include <pyerrors.h>
 
 #ifdef HAVE_PYCAIRO
-# include <pycairo.h>
-Pycairo_CAPI_t *Pycairo_CAPI;
+# include <py3cairo.h>
 #endif
 
 void _pygtk_register_boxed_types(PyObject *moddict);
@@ -86,7 +85,7 @@ pygtk_add_stock_items(PyObject *d)
 		    ctmp[i] -= 'a'-'A';
 	}
 	
-	obj = PyString_FromString(cur->data);
+	obj = PyUnicode_FromString(cur->data);
 	PyDict_SetItemString(d, buf, obj);
 	Py_DECREF(obj);
 	g_free(cur->data);
@@ -108,7 +107,7 @@ pygdk_add_extra_constants(PyObject *m)
 
       /* Add predefined atoms */
 #define add_atom(name) { aname = gdk_atom_name((GDK_##name)); \
-PyModule_AddObject(m, #name, PyString_FromString(aname)); \
+PyModule_AddObject(m, #name, PyUnicode_FromString(aname)); \
 g_free(aname); }
 
     add_atom(SELECTION_PRIMARY);
@@ -135,19 +134,19 @@ pygtk_add_extra_constants(PyObject *m)
 {
 #if GTK_CHECK_VERSION(2, 9, 3)
     PyModule_AddObject(m, "PAPER_NAME_A3",
-		       PyString_FromString(GTK_PAPER_NAME_A3));
+		       PyUnicode_FromString(GTK_PAPER_NAME_A3));
     PyModule_AddObject(m, "PAPER_NAME_A4",
-		       PyString_FromString(GTK_PAPER_NAME_A4));
+		       PyUnicode_FromString(GTK_PAPER_NAME_A4));
     PyModule_AddObject(m, "PAPER_NAME_A5",
-		       PyString_FromString(GTK_PAPER_NAME_A5));
+		       PyUnicode_FromString(GTK_PAPER_NAME_A5));
     PyModule_AddObject(m, "PAPER_NAME_B5",
-		       PyString_FromString(GTK_PAPER_NAME_B5));
+		       PyUnicode_FromString(GTK_PAPER_NAME_B5));
     PyModule_AddObject(m, "PAPER_NAME_LETTER",
-		       PyString_FromString(GTK_PAPER_NAME_LETTER));
+		       PyUnicode_FromString(GTK_PAPER_NAME_LETTER));
     PyModule_AddObject(m, "PAPER_NAME_EXECUTIVE",
-		       PyString_FromString(GTK_PAPER_NAME_EXECUTIVE));
+		       PyUnicode_FromString(GTK_PAPER_NAME_EXECUTIVE));
     PyModule_AddObject(m, "PAPER_NAME_LEGAL",
-		       PyString_FromString(GTK_PAPER_NAME_LEGAL));
+		       PyUnicode_FromString(GTK_PAPER_NAME_LEGAL));
 #endif
 }
 
@@ -155,30 +154,49 @@ static gboolean
 init_pycairo(void)
 {
 #ifdef HAVE_PYCAIRO
-    Pycairo_IMPORT;
-    if (Pycairo_CAPI == NULL)
+    if (import_cairo() < 0) {
+        PyErr_SetString(PyExc_RuntimeError, "import_cairo failed");
         return FALSE;
+    }
 #endif
     return TRUE;
 }
 
-DL_EXPORT(void)
-init_gtk(void)
+static struct PyModuleDef gtkmodule_def = {
+    PyModuleDef_HEAD_INIT,
+    "gtk._gtk",
+    NULL,
+    -1,
+    pygtk_functions
+};
+
+static struct PyModuleDef gdkmodule_def = {
+    PyModuleDef_HEAD_INIT,
+    "_gtk.gdk",
+    NULL,
+    -1,
+    pygdk_functions
+};
+
+PyMODINIT_FUNC
+PyInit__gtk()
 {
     PyObject *m, *d, *tuple, *o;
+    PyObject *retmod;
 
     /* initialise pygobject */
-    init_pygobject_check(2, 12, 0);
+    if (!pygobject_init(2, 12, 0))
+	return NULL;
     g_assert(pygobject_register_class != NULL);
     
     /* initialise pycairo */
     if (!init_pycairo())
-	return;
+	return NULL;
     
     /* initialise pygtk */
     gtk_type_init(0);
 
-    m = Py_InitModule("gtk._gtk", pygtk_functions);
+    retmod = m = PyModule_Create(&gtkmodule_def);
     d = PyModule_GetDict(m);
 
     /* gtk+ version */
@@ -200,8 +218,12 @@ init_gtk(void)
     pygtk_add_stock_items(d);
     
     /* extension API */
-    PyDict_SetItemString(d, "_PyGtk_API",
-			 o=PyCObject_FromVoidPtr(&functions, NULL));
+#if PY_VERSION_HEX >= 0x02070000
+    o = PyCapsule_New(&functions, "gtk._gtk._PyGtk_API", NULL);
+#else
+    o = PyCObject_FromVoidPtr(&functions, NULL);
+#endif
+    PyDict_SetItemString(d, "_PyGtk_API", o);
     Py_DECREF(o);
 	
     PyGtkDeprecationWarning = PyErr_NewException("gtk.GtkDeprecationWarning",
@@ -212,8 +234,11 @@ init_gtk(void)
     PyDict_SetItemString(d, "Warning", PyGtkWarning);
 
     /* namespace all the gdk stuff in gtk.gdk ... */
-    m = Py_InitModule("gtk.gdk", pygdk_functions);
+    m = PyModule_Create(&gdkmodule_def);
     d = PyModule_GetDict(m);
+
+    PyObject *modules = PySys_GetObject("modules");
+    PyDict_SetItemString(modules, "gtk.gdk", m);
 
     pygdk_register_classes(d);
     pygdk_add_constants(m, "GDK_");
@@ -230,4 +255,6 @@ init_gtk(void)
 #else
     PyModule_AddStringConstant(m, "WINDOWING", "?");
 #endif
+
+    return retmod;
 }

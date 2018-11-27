@@ -8,7 +8,7 @@
 # I, Behdad Esfahbod, hereby disclaim any rights for my contributions
 # to this code.
 
-from __future__ import division
+
 
 import sys
 import cairo

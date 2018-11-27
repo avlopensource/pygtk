@@ -16,7 +16,7 @@ import gtk
   COLUMN_NUMBER,
   COLUMN_PRODUCT,
   COLUMN_EDITABLE
-) = range(3)
+) = list(range(3))
 
 # data
 articles = [

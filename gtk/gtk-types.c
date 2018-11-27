@@ -66,8 +66,8 @@ PyGdkAtom_New(GdkAtom atom)
 
 /* style & rc-style helper code */
 #define NUM_STATES 5
-staticforward PyTypeObject PyGtkStyleHelper_Type;
-staticforward PyTypeObject PyGtkRcStyleHelper_Type;
+static PyTypeObject PyGtkStyleHelper_Type;
+static PyTypeObject PyGtkRcStyleHelper_Type;
 
 PyObject *
 _pygtk_style_helper_new(GtkStyle *style, int type, gpointer array)
@@ -210,8 +210,7 @@ static PySequenceMethods pygtk_style_helper_seqmethods = {
     0,
 };
 static PyTypeObject PyGtkStyleHelper_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,
+    PyVarObject_HEAD_INIT(NULL, 0)
     "gtk.GtkStyleHelper",
     sizeof(PyGtkStyleHelper_Object),
     0,
@@ -219,7 +218,7 @@ static PyTypeObject PyGtkStyleHelper_Type = {
     (printfunc)0,
     (getattrfunc)0,
     (setattrfunc)0,
-    (cmpfunc)0,
+    (PyAsyncMethods *)0,
     (reprfunc)0,
     0,
     &pygtk_style_helper_seqmethods,
@@ -277,7 +276,7 @@ pygtk_rc_style_helper_getitem(PyGtkRcStyleHelper_Object *self, Py_ssize_t pos)
 	{
 	    gchar **array = (gchar **)self->array;
 	    if (array[pos])
-		return PyString_FromString(array[pos]);
+		return PyUnicode_FromString(array[pos]);
 	    else {
 		Py_INCREF(Py_None);
 		return Py_None;
@@ -319,7 +318,7 @@ pygtk_rc_style_helper_setitem(PyGtkRcStyleHelper_Object *self, Py_ssize_t pos,
 	    if (value == Py_None)
                 string = NULL;
 	    else if ((as_string = PyObject_Str(value)) != NULL) {
-		string = g_strdup(PyString_AsString(as_string));
+		string = g_strdup(PyUnicode_AsUTF8(as_string));
 		Py_DECREF(as_string);
 	    }
             else
@@ -359,8 +358,7 @@ static PySequenceMethods pygtk_rc_style_helper_seqmethods = {
     0,
 };
 static PyTypeObject PyGtkRcStyleHelper_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,
+    PyVarObject_HEAD_INIT(NULL, 0)
     "gtk.GtkRcStyleHelper",
     sizeof(PyGtkRcStyleHelper_Object),
     0,
@@ -368,7 +366,7 @@ static PyTypeObject PyGtkRcStyleHelper_Type = {
     (printfunc)0,
     (getattrfunc)0,
     (setattrfunc)0,
-    (cmpfunc)0,
+    (PyAsyncMethods *)0,
     (reprfunc)0,
     0,
     &pygtk_rc_style_helper_seqmethods,
@@ -416,7 +414,7 @@ PyGdkWindow_Repr(PyGdkWindow_Object *self)
 	sprintf(buf, "<GdkPixmap at %lx>", (long)PyGdkWindow_Get(self));
     else
 	sprintf(buf, "<GdkWindow at %lx>", (long)PyGdkWindow_Get(self));
-    return PyString_FromString(buf);
+    return PyUnicode_FromString(buf);
 }
 
 static PyObject *
@@ -520,7 +518,7 @@ PyGdkWindow_NewGC(PyGdkWindow_Object *self, PyObject *args, PyObject *kws)
 			}
 			mask |= others[i].mask;
 			*((int *)((char *)&values + others[i].offs)) =
-			    PyInt_AsLong(value);
+			    PyLong_AsLong(value);
 			break;
 		    }
 		    i++;
@@ -584,7 +582,7 @@ PyGdkWindow_PropertyGet(PyGdkWindow_Object *self, PyObject *args)
 	guint32 *data32;
 	switch (aformat) {
 	case 8:
-	    if ((pdata = PyString_FromStringAndSize(data, alength)) == NULL)
+	    if ((pdata = PyUnicode_FromStringAndSize(data, alength)) == NULL)
 	        return NULL;
 	    break;
 	case 16:
@@ -671,7 +669,7 @@ PyGdkWindow_PropertyChange(PyGdkWindow_Object *self, PyObject *args)
 		    PyErr_SetString(PyExc_TypeError,"data element not an int");
 		    return NULL;
 		}
-		data16[i] = PyInt_AsLong(item);
+		data16[i] = PyLong_AsLong(item);
 		Py_DECREF(item);
 	    }
 	}
@@ -699,7 +697,7 @@ PyGdkWindow_PropertyChange(PyGdkWindow_Object *self, PyObject *args)
 		    PyErr_SetString(PyExc_TypeError,"data element not an int");
 		    return NULL;
 		}
-		data32[i] = PyInt_AsLong(item);
+		data32[i] = PyLong_AsLong(item);
 		Py_DECREF(item);
 	    }
 	}
@@ -861,8 +859,7 @@ PyGdkWindow_GetAttr(PyGdkWindow_Object *self, char *key)
 }
 
 PyTypeObject PyGdkWindow_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,
+    PyVarObject_HEAD_INIT(NULL, 0)
     "GdkWindow",
     sizeof(PyGdkWindow_Object),
     0,
@@ -891,8 +888,8 @@ pygdk_atom_from_pyobject(PyObject *object)
 {
     if (object == NULL)
 	return NULL;
-    if (PyString_Check(object))
-	return gdk_atom_intern(PyString_AsString(object), FALSE);
+    if (PyUnicode_Check(object))
+	return gdk_atom_intern(PyUnicode_AsUTF8(object), FALSE);
     if (PyGdkAtom_Check(object))
 	return PyGdkAtom_Get(object);
     PyErr_SetString(PyExc_TypeError, "unable to convert argument to GdkAtom");
@@ -919,7 +916,7 @@ pygdk_atom_repr(PyGdkAtom_Object *self)
     if (!self->name) self->name = gdk_atom_name(self->atom);
     g_snprintf(buf, 256, "<GdkAtom 0x%lx = '%s'>", (unsigned long)self->atom,
 	       self->name?self->name:"(null)");
-    return PyString_FromString(buf);
+    return PyUnicode_FromString(buf);
 }
 
 static PyObject *
@@ -927,7 +924,7 @@ pygdk_atom_str(PyGdkAtom_Object *self)
 {
     if (!self->name) self->name = gdk_atom_name(self->atom);
     if (self->name)
-	return PyString_FromString(self->name);
+	return PyUnicode_FromString(self->name);
     return pygdk_atom_repr(self);
 }
 
@@ -936,7 +933,7 @@ pygdk_atom_richcompare(PyGdkAtom_Object *self, PyGdkAtom_Object *v, int op)
 {
     PyObject *result = Py_NotImplemented;
  
-    if (PyString_Check(v)) {
+    if (PyUnicode_Check(v)) {
         PyObject *str = pygdk_atom_str(self);
         result =  PyObject_RichCompare(str, (PyObject *)v, op);
         Py_DECREF(str);
@@ -971,8 +968,7 @@ pygdk_atom_richcompare(PyGdkAtom_Object *self, PyGdkAtom_Object *v, int op)
 }
 
 PyTypeObject PyGdkAtom_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,
+    PyVarObject_HEAD_INIT(NULL, 0)
     "gtk.gdk.GdkAtom",
     sizeof(PyGdkAtom_Object),
     0,
@@ -980,7 +976,7 @@ PyTypeObject PyGdkAtom_Type = {
     (printfunc)0,
     (getattrfunc)0,
     (setattrfunc)0,
-    (cmpfunc)0,
+    (PyAsyncMethods *)0,
     (reprfunc)pygdk_atom_repr,
     0,
     0,
@@ -1003,7 +999,7 @@ typedef struct {
     GtkTreeModel *model;
     GtkTreeIter iter;
 } PyGtkTreeModelRow;
-staticforward PyTypeObject PyGtkTreeModelRow_Type;
+static PyTypeObject PyGtkTreeModelRow_Type;
 
 PyObject *
 _pygtk_tree_model_row_new(GtkTreeModel *model, GtkTreeIter *iter)
@@ -1166,8 +1162,7 @@ static PyGetSetDef pygtk_tree_model_row_getsets[] = {
 };
 
 static PyTypeObject PyGtkTreeModelRow_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,
+    PyVarObject_HEAD_INIT(NULL, 0)
     "gtk.TreeModelRow",
     sizeof(PyGtkTreeModelRow),
     0,
@@ -1175,7 +1170,7 @@ static PyTypeObject PyGtkTreeModelRow_Type = {
     (printfunc)0,
     (getattrfunc)0,
     (setattrfunc)0,
-    (cmpfunc)0,
+    (PyAsyncMethods *)0,
     (reprfunc)0,
     0,
     &pygtk_tree_model_row_seqmethods,
@@ -1205,7 +1200,7 @@ typedef struct {
     gboolean has_more;
     GtkTreeIter iter;
 } PyGtkTreeModelRowIter;
-staticforward PyTypeObject PyGtkTreeModelRowIter_Type;
+static PyTypeObject PyGtkTreeModelRowIter_Type;
 
 PyObject *
 _pygtk_tree_model_row_iter_new(GtkTreeModel *model, GtkTreeIter *parent_iter)
@@ -1256,8 +1251,7 @@ pygtk_tree_model_row_iter_next(PyGtkTreeModelRowIter *self)
 }
 
 static PyTypeObject PyGtkTreeModelRowIter_Type = {
-    PyObject_HEAD_INIT(NULL)
-    0,
+    PyVarObject_HEAD_INIT(NULL, 0)
     "gtk.TreeModelRowIter",
     sizeof(PyGtkTreeModelRowIter),
     0,
@@ -1265,7 +1259,7 @@ static PyTypeObject PyGtkTreeModelRowIter_Type = {
     (printfunc)0,
     (getattrfunc)0,
     (setattrfunc)0,
-    (cmpfunc)0,
+    (PyAsyncMethods *)0,
     (reprfunc)0,
     0,
     0,
@@ -1276,7 +1270,7 @@ static PyTypeObject PyGtkTreeModelRowIter_Type = {
     (getattrofunc)0,
     (setattrofunc)0,
     0,
-    Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_ITER,
+    Py_TPFLAGS_DEFAULT,
     NULL,
     (traverseproc)0,
     (inquiry)0,
@@ -1395,23 +1389,23 @@ pygtk_tree_path_to_pyobject(GtkTreePath *path)
     indices = gtk_tree_path_get_indices(path);
     ret = PyTuple_New(len);
     for (i = 0; i < len; i++)
-	PyTuple_SetItem(ret, i, PyInt_FromLong(indices[i]));
+	PyTuple_SetItem(ret, i, PyLong_FromLong(indices[i]));
     return ret;
 }
 
 GtkTreePath *
 pygtk_tree_path_from_pyobject(PyObject *object)
 {
-    if (PyString_Check(object)) {
+    if (PyUnicode_Check(object)) {
 	GtkTreePath *path;
 
-	path = gtk_tree_path_new_from_string(PyString_AsString(object));
+	path = gtk_tree_path_new_from_string(PyUnicode_AsUTF8(object));
 	return path;
-    } else if (PyInt_Check(object)) {
+    } else if (PyLong_Check(object)) {
 	GtkTreePath *path;
 
 	path = gtk_tree_path_new();
-	gtk_tree_path_append_index(path, PyInt_AsLong(object));
+	gtk_tree_path_append_index(path, PyLong_AsLong(object));
 	return path;
     } else if (PyTuple_Check(object)) {
 	GtkTreePath *path;
@@ -1423,7 +1417,7 @@ pygtk_tree_path_from_pyobject(PyObject *object)
 	path = gtk_tree_path_new();
 	for (i = 0; i < len; i++) {
 	    PyObject *item = PyTuple_GetItem(object, i);
-	    gint index = PyInt_AsLong(item);
+	    gint index = PyLong_AsLong(item);
 	    if (PyErr_Occurred()) {
 		gtk_tree_path_free(path);
 		PyErr_Clear();
@@ -1501,11 +1495,11 @@ PyGdkRectangle_to_value(GValue *value, PyObject *object)
 void
 _pygtk_register_boxed_types(PyObject *moddict)
 {
-    PyGtkStyleHelper_Type.ob_type = &PyType_Type;
-    PyGtkRcStyleHelper_Type.ob_type = &PyType_Type;
-    PyGdkAtom_Type.ob_type = &PyType_Type;
-    PyGtkTreeModelRow_Type.ob_type = &PyType_Type;
-    PyGtkTreeModelRowIter_Type.ob_type = &PyType_Type;
+    Py_TYPE((PyObject *)&PyGtkStyleHelper_Type) = &PyType_Type;
+    Py_TYPE((PyObject *)&PyGtkRcStyleHelper_Type) = &PyType_Type;
+    Py_TYPE((PyObject *)&PyGdkAtom_Type) = &PyType_Type;
+    Py_TYPE((PyObject *)&PyGtkTreeModelRow_Type) = &PyType_Type;
+    Py_TYPE((PyObject *)&PyGtkTreeModelRowIter_Type) = &PyType_Type;
 
     PyType_Ready(&PyGtkStyleHelper_Type);
     PyType_Ready(&PyGtkRcStyleHelper_Type);

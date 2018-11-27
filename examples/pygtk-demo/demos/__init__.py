@@ -13,11 +13,14 @@ for _mod in _file_list:
     _mod = _mod[:-3]
     try:
         _doc = ''
-        exec 'import ' + _mod + '\n' + \
-        '_doc = ' + _mod + '.__doc__'
-        _description = _doc.splitlines()[0]
+        exec('from . import ' + _mod + '\n' + \
+        '_doc = ' + _mod + '.__doc__')
+        if '_doc' is not None:
+            _description = _doc.splitlines()[0]
+        else:
+            _description = 'No description for {}'.format(_mod)
         demo_list.append((_description, _mod))
-    except (ImportError, AttributeError), msg:
+    except (ImportError, AttributeError, TabError) as msg:
         # ImportError or AttributeError (if _doc is None)
         #print 'failed: ', _mod
         pass

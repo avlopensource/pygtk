@@ -25,7 +25,7 @@ from types import ModuleType as module
 
 def _find_mod(modname):
     d = {}
-    exec 'import %s; mod = %s' % (modname, modname) in d
+    exec('import %s; mod = %s' % (modname, modname), d)
     return d['mod']
 
 class RemapModule(module):
@@ -38,7 +38,7 @@ class RemapModule(module):
         self.__modules = None
     def __getattr__(self, attr):
         if not self.__modules:
-            self.__modules = map(_find_mod, self.__modulenames)
+            self.__modules = list(map(_find_mod, self.__modulenames))
         for mod in self.__modules:
             try:
                 value = getattr(mod, attr)

@@ -2,7 +2,7 @@
 
 import sys
 import bdb
-import repr
+import reprlib
 import string
 import linecache # for linecache.getlines(filename)
 import pygtk
@@ -256,14 +256,15 @@ class PyGTKDb(gtk.Window, bdb.Bdb):
             func = frame.f_code.co_name
         else:
             func = "<lambda>"
-        self.set_status(func + " returned " + repr.repr(return_value))
+        self.set_status(func + " returned " + reprlib.repr(return_value))
         self.interaction(frame, None)
-    def user_exception(self, frame, (exc_type, exc_value, exc_traceback)):
+    def user_exception(self, frame, xxx_todo_changeme):
+        (exc_type, exc_value, exc_traceback) = xxx_todo_changeme
         frame.f_locals['__exception__'] = exc_type, exc_value
         if type(exc_type) == type(''):
             exc_type_name = exc_type
         else: exc_type_name = exc_type.__name__
-        self.set_status(exc_type_name + ':' + repr.repr(exc_value))
+        self.set_status(exc_type_name + ':' + reprlib.repr(exc_value))
         self.interaction(frame, exc_traceback)
 
     def interaction(self, frame, traceback):
@@ -289,10 +290,10 @@ class PyGTKDb(gtk.Window, bdb.Bdb):
         model = self.vardisp.get_model()
         model.clear()
         locals = self.curframe.f_locals
-        self.vardisp.varnames = locals.keys()
+        self.vardisp.varnames = list(locals.keys())
         self.vardisp.varnames.sort()
         for var in self.vardisp.varnames:
-            row = [var, type(locals[var]).__name__, repr.repr(locals[var])]
+            row = [var, type(locals[var]).__name__, reprlib.repr(locals[var])]
             model.append(row)
         self.vardisp.get_selection().select_path(0)
         return
@@ -357,20 +358,20 @@ class PyGTKDb(gtk.Window, bdb.Bdb):
         globals['__privileged__'] = 1
         try:
             code = compile(line + '\n', '<stdin>', 'single')
-            exec code in globals, locals
+            exec(code, globals, locals)
         except:
-            if type(sys.exc_type) == type(''):
-                exc_type_name = sys.exc_type
+            if type(sys.exc_info()[0]) == type(''):
+                exc_type_name = sys.exc_info()[0]
             else: exc_type_name = sys.exc_type.__name__
             self.set_status('*** ' + exc_type_name + ': ' +
-                            str(sys.exc_value))
+                            str(sys.exc_info()[1]))
             return
         self.update_var_listing()
         return
     def do_edit(self, _b=None):
         locals = self.curframe.f_locals
         varname = self.vardisp.varnames[self.vardisp.selected]
-        val = repr.repr(locals[varname])
+        val = reprlib.repr(locals[varname])
         value = dialogs.InputBox("Edit Variable",
                                  "Enter new value for " + varname + ":",
                                  self, val)
@@ -381,16 +382,16 @@ class PyGTKDb(gtk.Window, bdb.Bdb):
             val = eval(value, globals, locals)
             self.curframe.f_locals[varname] = val
         except:
-            if type(sys.exc_type) == type(''):
-                exc_type_name = sys.exc_type
+            if type(sys.exc_info()[0]) == type(''):
+                exc_type_name = sys.exc_info()[0]
             else: exc_type_name = sys.exc_type.__name__
             self.set_status('*** ' + exc_type_name + ': ' +
-                            str(sys.exc_value))
+                            str(sys.exc_info()[1]))
             return
         row = self.vardisp.selected
         model = self.vardisp.get_model()
         model[row][1] = type(val).__name__
-        model[row][2] = repr.repr(val)
+        model[row][2] = reprlib.repr(val)
 
 # this makes up the interface that is compatible with pdb.
 def run(statement, globals=None, locals=None):
@@ -406,7 +407,7 @@ def runeval(expression, globals=None, locals=None):
 def runcall(*args):
     win = PyGTKDb()
     win.show()
-    return apply(win.runcall, args)
+    return win.runcall(*args)
 
 def set_trace():
     win = PyGTKDb()
@@ -425,7 +426,7 @@ def pm():
 if __name__ == '__main__':
     import os
     if not sys.argv[1:]:
-        print "usage: gtkdb.py scriptfile [args ...]"
+        print("usage: gtkdb.py scriptfile [args ...]")
         sys.exit(2)
     filename = sys.argv[1]
     del sys.argv[0] # delete gtkdb.py

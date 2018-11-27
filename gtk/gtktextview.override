@@ -557,7 +557,7 @@ _wrap_gtk_text_buffer_insert_with_tags_by_name(PyGObject *self, PyObject *args)
     for (i = 2; i < len; i++) {
         PyObject *item = PyTuple_GetItem(args, i);
 
-        if (!PyString_Check(item)) {
+        if (!PyUnicode_Check(item)) {
             PyErr_SetString(PyExc_TypeError,
                             "additional argument must be a string");
             return NULL;
@@ -571,7 +571,7 @@ _wrap_gtk_text_buffer_insert_with_tags_by_name(PyGObject *self, PyObject *args)
 
     for (i = 2; i < len; i++) {
         PyObject *item = PyTuple_GetItem(args, i);
-        const gchar *tagname = PyString_AsString(item);
+        const gchar *tagname = PyUnicode_AsUTF8(item);
 
         gtk_text_buffer_apply_tag_by_name(GTK_TEXT_BUFFER(self->obj),
                                           tagname, &start, iter);
@@ -616,7 +616,7 @@ _wrap_gtk_text_buffer_create_tag(PyGObject *self, PyObject *args, PyObject *kwar
         while (PyDict_Next(kwargs, &i, &prop, &val)) {
             GParamSpec *pspec;
             GValue value = { 0, };
-            gchar *prop_str = PyString_AsString(prop);
+            gchar *prop_str = PyUnicode_AsUTF8(prop);
 
             pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(tag),
                                                   prop_str);
@@ -1085,7 +1085,7 @@ _wrap_gtk_text_attributes__get_rise(PyObject *self, void *closure)
     int ret;
 
     ret = pyg_boxed_get(self, GtkTextAttributes)->appearance.rise;
-    return PyInt_FromLong(ret);
+    return PyLong_FromLong(ret);
 }
 %%
 override-attr GtkTextAttributes.underline
@@ -1095,7 +1095,7 @@ _wrap_gtk_text_attributes__get_underline(PyObject *self, void *closure)
     int ret;
 
     ret = pyg_boxed_get(self, GtkTextAttributes)->appearance.underline;
-    return PyInt_FromLong(ret);
+    return PyLong_FromLong(ret);
 }
 %%
 override-attr GtkTextAttributes.strikethrough
@@ -1408,7 +1408,7 @@ _wrap_gtk_text_buffer_serialize(PyGObject *self, PyObject *args,
     ret = gtk_text_buffer_serialize(GTK_TEXT_BUFFER(self->obj),
                                       GTK_TEXT_BUFFER(content_buffer->obj),
                                       format, start, end, &length);
-    py_retval = PyString_FromStringAndSize((char *) ret, (Py_ssize_t) length);
+    py_retval = PyUnicode_FromStringAndSize((char *) ret, (Py_ssize_t) length);
     g_free(ret);
     return py_retval;
 }
@@ -1436,7 +1436,7 @@ pygtk_text_buffer_register_deserialize_format_cb(GtkTextBuffer *register_buf,
     py_register_buf = pygobject_new((GObject*)register_buf);
     py_content_buf = pygobject_new((GObject*)content_buf);
     py_iter = pyg_boxed_new(GTK_TYPE_TEXT_ITER, iter, TRUE, TRUE);
-    py_data = PyString_FromStringAndSize((char *) data, length);
+    py_data = PyUnicode_FromStringAndSize((char *) data, length);
     if (cunote->data) {
         retobj = PyEval_CallFunction(cunote->func, "(NNNNiO)",
                                      py_register_buf, py_content_buf,
@@ -1449,7 +1449,7 @@ pygtk_text_buffer_register_deserialize_format_cb(GtkTextBuffer *register_buf,
     }
 
     if (retobj != NULL) {
-        ret = PyInt_AsLong(retobj);
+        ret = PyLong_AsLong(retobj);
         Py_DECREF(retobj);
     } else {
         PyErr_Print();
@@ -1492,7 +1492,7 @@ _wrap_gtk_text_buffer_register_deserialize_format(PyGObject *self,
         pygtk_custom_destroy_notify);
 
     name = gdk_atom_name(atom);
-    ret = PyString_FromString(name);
+    ret = PyUnicode_FromString(name);
     g_free(name);
     return ret;
 }
@@ -1531,7 +1531,7 @@ pygtk_text_buffer_register_serialize_format_cb(GtkTextBuffer *register_buf,
     }
 
     if (retobj != NULL) {
-        PyString_AsStringAndSize(retobj, (gchar**)&ret, (Py_ssize_t*) length);
+        ret = (guint8 *)PyUnicode_AsUTF8AndSize(retobj, (Py_ssize_t*) length);
         ret = g_memdup(ret, *length);
         Py_DECREF(retobj);
     } else {
@@ -1577,7 +1577,7 @@ _wrap_gtk_text_buffer_register_serialize_format(PyGObject *self,
         cunote, pygtk_custom_destroy_notify);
 
     name = gdk_atom_name(atom);
-    ret = PyString_FromString(name);
+    ret = PyUnicode_FromString(name);
     g_free(name);
     return ret;
 }
@@ -1596,7 +1596,7 @@ _wrap_gtk_text_buffer_get_deserialize_formats(PyGObject *self)
     py_formats = PyList_New(n_formats);
     for (i = 0; i < n_formats; i++) {
         gchar *name = gdk_atom_name(formats[i]);
-        PyList_SetItem(py_formats, i, PyString_FromString(name));
+        PyList_SetItem(py_formats, i, PyUnicode_FromString(name));
         g_free(name);
     }
     g_free(formats);
@@ -1617,7 +1617,7 @@ _wrap_gtk_text_buffer_get_serialize_formats(PyGObject *self)
     py_formats = PyList_New(n_formats);
     for (i = 0; i < n_formats; i++) {
         gchar *name = gdk_atom_name(formats[i]);
-        PyList_SetItem(py_formats, i, PyString_FromString(name));
+        PyList_SetItem(py_formats, i, PyUnicode_FromString(name));
         g_free(name);
     }
     g_free(formats);
