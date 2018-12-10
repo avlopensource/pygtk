@@ -229,16 +229,19 @@ _wrap_gtk_builder_add_objects_from_file(PyGObject *self,
     GError *error = NULL;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-				     "sO:GtkBuilder.add_objects_from_file",
-				     kwlist, &filename, &py_obj_ids))
+				     "O&O:GtkBuilder.add_objects_from_file",
+				     kwlist, pyg_pystr_to_gfilename_conv, &filename, &py_obj_ids))
         return NULL;
 
-    if (!pylist_to_strv (py_obj_ids, &object_ids))
+    if (!pylist_to_strv (py_obj_ids, &object_ids)) {
+        g_free(filename);
         return NULL;
+    }
 
     ret = gtk_builder_add_objects_from_file (GTK_BUILDER (self->obj),
 					     filename, object_ids, &error);
     g_strfreev (object_ids);
+    g_free(filename);
     
     if (pyg_error_check(&error))
         return NULL;

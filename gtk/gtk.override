@@ -23,7 +23,6 @@
 headers
 #define NO_IMPORT_PYGOBJECT
 #include "pygobject.h"
-#include "pyglib.h"
 
 #include <fcntl.h>
 #include <locale.h>
@@ -2916,12 +2915,21 @@ _wrap_gtk_rc_set_default_files(PyGObject *self, PyObject *args,
     for (i = 0; i < n_files; i++) {
         PyObject *item = PySequence_GetItem(py_filenames, i);
         Py_DECREF(item); /* PySequence_GetItem INCREF's */
-        filenames[i] = PyUnicode_AsUTF8(item);
+        filenames[i] = pyg_pystr_to_gfilename(item);
+        if (filenames[i] == NULL) {
+            int j;
+            for (j = 0; j < i; ++j)
+                g_free(filenames[j]);
+            g_free(filenames);
+            return NULL;
+        }
     }
     filenames[n_files] = NULL;
 
     gtk_rc_set_default_files(filenames);
 
+    for (i = 0; i < n_files; i++)
+      g_free(filenames[i]);
     g_free(filenames);
 
     Py_INCREF(Py_None);
@@ -2944,7 +2952,7 @@ _wrap_gtk_rc_get_default_files(PyGObject *self)
 
     ret = PyTuple_New(i);
     for (j = 0; j < i; j++)
-        PyTuple_SetItem(ret, j, PyUnicode_FromString(filenames[j]));
+        PyTuple_SetItem(ret, j, pyg_pystr_from_gfilename(filenames[j]));
 
     return ret;
 }
@@ -4702,7 +4710,7 @@ _wrap_gtk_file_chooser_list_shortcut_folders(PyGObject *self)
         return NULL;
 
     for (i = 0, tmp = slist; i < slen && tmp != NULL; tmp = tmp->next, i++) {
-        PyObject *obj = PyUnicode_FromString((char *)tmp->data);
+        PyObject *obj = pyg_pystr_from_gfilename((char *)tmp->data);
         if (obj == NULL) {
 	    g_slist_foreach(slist, (GFunc)g_free, NULL);
 	    g_slist_free(slist);
@@ -4774,8 +4782,9 @@ _wrap_gtk_file_filter_filter(PyGObject *self, PyObject *args,
     if ((obj = PyTuple_GetItem(py_filter_info, 0)) != Py_None) {
 	if (!PyUnicode_Check(obj))
 	    goto error;
-        /* TODO */
-	filter_info.filename = PyUnicode_AsUTF8(obj);
+        filter_info.filename = pyg_pystr_to_gfilename(obj);
+        if (filter_info.filename == NULL)
+            return NULL;
 	filter_info.contains |= GTK_FILE_FILTER_FILENAME;
     }
     if ((obj = PyTuple_GetItem(py_filter_info, 1)) != Py_None) {
@@ -5224,7 +5233,15 @@ _wrap_gtk_icon_theme_set_search_path(PyGObject *self, PyObject *args,
 	    g_free(paths);
 	    return NULL;
 	}
-	paths[i] = PyUnicode_AsUTF8(py_path);
+        paths[i] = pyg_pystr_to_gfilename(py_path);
+        if (paths[i] == NULL) {
+          int j;
+          for (j = 0; j < i; ++j)
+            g_free(paths[j]);
+          g_free(paths);
+          Py_DECREF(py_path);
+          return NULL;
+        }
 	Py_DECREF(py_path);
     }
 
@@ -5250,7 +5267,7 @@ _wrap_gtk_icon_theme_get_search_path(PyGObject *self)
 
     py_tuple = PyTuple_New(n_items);
     for (i = 0; i < n_items; i++)
-	PyTuple_SetItem(py_tuple, i, PyUnicode_FromString(paths[i]));
+	PyTuple_SetItem(py_tuple, i, pyg_pystr_from_gfilename(paths[i]));
 
     g_strfreev(paths);
 

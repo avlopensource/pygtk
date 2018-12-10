@@ -160,8 +160,8 @@ _wrap_gdk_pixbuf_save(PyGObject *self, PyObject *args,
     GError *error = NULL;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     "ss|O!:GdkPixbuf.save", kwlist,
-                                     &filename, &type,
+                                     "O&s|O!:GdkPixbuf.save", kwlist,
+                                     pyg_pystr_to_gfilename_conv, &filename, &type,
                                      &PyDict_Type, &py_options))
         return NULL;
 
@@ -178,6 +178,7 @@ _wrap_gdk_pixbuf_save(PyGObject *self, PyObject *args,
             if (!PyUnicode_Check(key) || !PyUnicode_Check(value)) {
                 g_free(option_keys);
                 g_free(option_values);
+                g_free(filename);
                 PyErr_SetString(PyExc_TypeError,
                                 "keys and values must be strings");
                 return NULL;
@@ -199,6 +200,7 @@ _wrap_gdk_pixbuf_save(PyGObject *self, PyObject *args,
 
     g_free(option_keys);
     g_free(option_values);
+    g_free(filename);
  
     if (pyg_error_check(&error))
         return NULL;
@@ -690,11 +692,12 @@ _wrap_gdk_pixbuf_get_file_info(PyObject *self, PyObject *args,
     gchar *filename;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-				     "s:gtk.gdk.pixbuf_get_file_info", kwlist,
-				     &filename))
+				     "O&:gtk.gdk.pixbuf_get_file_info", kwlist,
+				     pyg_pystr_to_gfilename_conv, &filename))
 	return NULL;
 
     format = gdk_pixbuf_get_file_info(filename, &width, &height);
+    g_free(filename);
 
     if (format) {
 	PyObject *py_format;
