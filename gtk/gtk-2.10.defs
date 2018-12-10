@@ -1510,7 +1510,7 @@
   (c-name "gtk_print_operation_set_export_filename")
   (return-type "none")
   (parameters
-    '("const-gchar*" "filename")
+    '("filename_t" "filename")
   )
 )
 
@@ -3380,7 +3380,7 @@
   (c-name "gtk_status_icon_new_from_file")
   (return-type "GtkStatusIcon*")
   (parameters
-    '("const-gchar*" "filename")
+    '("filename_t" "filename")
   )
 )
 
@@ -3414,7 +3414,7 @@
   (c-name "gtk_status_icon_set_from_file")
   (return-type "none")
   (parameters
-    '("const-gchar*" "filename")
+    '("filename_t" "filename")
   )
 )
 

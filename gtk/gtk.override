@@ -23,6 +23,7 @@
 headers
 #define NO_IMPORT_PYGOBJECT
 #include "pygobject.h"
+#include "pyglib.h"
 
 #include <fcntl.h>
 #include <locale.h>
@@ -3369,7 +3370,7 @@ _wrap_gtk_file_selection_get_selections(PyGObject *self)
 
     ret = PyTuple_New(size);
     for (i = 0; i < size; i++)
-        PyTuple_SetItem(ret, i, PyUnicode_FromString(filenames[i]));
+        PyTuple_SetItem(ret, i, pyg_pystr_from_gfilename(filenames[i]));
 
     return ret;
 }
@@ -4590,7 +4591,7 @@ _wrap_gtk_file_chooser_get_filenames(PyGObject *self)
         return NULL;
 
     for (i = 0, tmp = slist; i < slen && tmp != NULL; tmp = tmp->next, i++) {
-        PyObject *obj = PyUnicode_FromString((char *)tmp->data);
+        PyObject *obj = pyg_pystr_from_gfilename((char *)tmp->data);
         if (obj == NULL) {
 	    g_slist_foreach(slist, (GFunc)g_free, NULL);
 	    g_slist_free(slist);
@@ -4773,6 +4774,7 @@ _wrap_gtk_file_filter_filter(PyGObject *self, PyObject *args,
     if ((obj = PyTuple_GetItem(py_filter_info, 0)) != Py_None) {
 	if (!PyUnicode_Check(obj))
 	    goto error;
+        /* TODO */
 	filter_info.filename = PyUnicode_AsUTF8(obj);
 	filter_info.contains |= GTK_FILE_FILTER_FILENAME;
     }
@@ -4824,7 +4826,7 @@ pygtk_file_filter_add_custom_cb(const GtkFileFilterInfo *filter_info,
 
     if (filter_info->filename
 	&& (filter_info->contains & GTK_FILE_FILTER_FILENAME)) {
-	py_obj = PyUnicode_FromString(filter_info->filename);
+	py_obj = pyg_pystr_from_gfilename(filter_info->filename);
     } else {
 	Py_INCREF(Py_None);
 	py_obj = Py_None;

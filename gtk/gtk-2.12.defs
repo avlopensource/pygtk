@@ -235,7 +235,7 @@
   (c-name "gtk_builder_add_from_file")
   (return-type "guint")
   (parameters
-    '("const-gchar*" "filename")
+    '("filename_t" "filename")
     '("GError**" "error")
   )
 )
@@ -580,7 +580,7 @@
   (c-name "gtk_page_setup_new_from_file")
   (return-type "GtkPageSetup*")
   (parameters
-    '("const-gchar*" "file_name")
+    '("filename_t" "file_name")
     '("GError**" "error")
   )
 )
@@ -600,7 +600,7 @@
   (c-name "gtk_page_setup_to_file")
   (return-type "gboolean")
   (parameters
-    '("const-char*" "file_name")
+    '("filename_t" "file_name")
     '("GError**" "error")
   )
 )
@@ -655,7 +655,7 @@
   (c-name "gtk_print_settings_new_from_file")
   (return-type "GtkPrintSettings*")
   (parameters
-    '("const-gchar*" "file_name")
+    '("filename_t" "file_name")
     '("GError**" "error")
   )
 )
@@ -665,7 +665,7 @@
   (c-name "gtk_print_settings_to_file")
   (return-type "gboolean")
   (parameters
-    '("const-gchar*" "file_name")
+    '("filename_t" "file_name")
     '("GError**" "error")
   )
 )

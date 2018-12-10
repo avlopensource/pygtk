@@ -7143,7 +7143,7 @@
 (define-method get_filename
   (of-object "GtkFileChooser")
   (c-name "gtk_file_chooser_get_filename")
-  (return-type "gchar*")
+  (return-type "filename_t")
 )
 
 (define-method set_filename
@@ -7151,7 +7151,7 @@
   (c-name "gtk_file_chooser_set_filename")
   (return-type "gboolean")
   (parameters
-    '("const-char*" "filename")
+    '("filename_t" "filename")
   )
 )
 
@@ -7160,7 +7160,7 @@
   (c-name "gtk_file_chooser_select_filename")
   (return-type "gboolean")
   (parameters
-    '("const-char*" "filename")
+    '("filename_t" "filename")
   )
 )
 
@@ -7169,7 +7169,7 @@
   (c-name "gtk_file_chooser_unselect_filename")
   (return-type "none")
   (parameters
-    '("const-char*" "filename")
+    '("filename_t" "filename")
   )
 )
 
@@ -7196,14 +7196,14 @@
   (c-name "gtk_file_chooser_set_current_folder")
   (return-type "gboolean")
   (parameters
-    '("const-gchar*" "filename")
+    '("filename_t" "filename")
   )
 )
 
 (define-method get_current_folder
   (of-object "GtkFileChooser")
   (c-name "gtk_file_chooser_get_current_folder")
-  (return-type "gchar*")
+  (return-type "filename_t")
 )
 
 (define-method get_uri
@@ -7308,7 +7308,7 @@
 (define-method get_preview_filename
   (of-object "GtkFileChooser")
   (c-name "gtk_file_chooser_get_preview_filename")
-  (return-type "char*")
+  (return-type "filename_t")
 )
 
 (define-method get_preview_uri
@@ -7376,7 +7376,7 @@
   (c-name "gtk_file_chooser_add_shortcut_folder")
   (return-type "gboolean")
   (parameters
-    '("const-char*" "folder")
+    '("filename_t" "folder")
     '("GError**" "error")
   )
 )
@@ -7386,7 +7386,7 @@
   (c-name "gtk_file_chooser_remove_shortcut_folder")
   (return-type "gboolean")
   (parameters
-    '("const-char*" "folder")
+    '("filename_t" "folder")
     '("GError**" "error")
   )
 )
@@ -7658,7 +7658,7 @@
   (c-name "gtk_file_selection_set_filename")
   (return-type "none")
   (parameters
-    '("const-gchar*" "filename")
+    '("filename_t" "filename")
   )
   (deprecated "use gtk.FileChooserDialog")
 )
@@ -8012,7 +8012,7 @@
   (c-name "gtk_file_system_filename_to_path")
   (return-type "GtkFilePath*")
   (parameters
-    '("const-gchar*" "filename")
+    '("filename_t" "filename")
   )
 )
 
@@ -8192,7 +8192,7 @@
   (of-object "GtkFileSystem")
   (return-type "GtkFilePath*")
   (parameters
-    '("const-gchar*" "path")
+    '("filename_t" "path")
   )
 )
 
@@ -9286,7 +9286,7 @@
   (c-name "gtk_icon_source_set_filename")
   (return-type "none")
   (parameters
-    '("const-gchar*" "filename")
+    '("filename_t" "filename")
   )
 )
 
@@ -9311,7 +9311,7 @@
 (define-method get_filename
   (of-object "GtkIconSource")
   (c-name "gtk_icon_source_get_filename")
-  (return-type "const-gchar*")
+  (return-type "filename_t")
 )
 
 (define-method get_icon_name
@@ -9463,7 +9463,7 @@
   (c-name "gtk_icon_theme_set_search_path")
   (return-type "none")
   (parameters
-    '("const-gchar*[]" "path")
+    '("filename_t[]" "path")
     '("gint" "n_elements")
   )
 )
@@ -9473,7 +9473,7 @@
   (c-name "gtk_icon_theme_get_search_path")
   (return-type "none")
   (parameters
-    '("gchar**[]" "path")
+    '("filename_t[]" "path")
     '("gint*" "n_elements")
   )
 )
@@ -9483,7 +9483,7 @@
   (c-name "gtk_icon_theme_append_search_path")
   (return-type "none")
   (parameters
-    '("const-gchar*" "path")
+    '("filename_t" "path")
   )
 )
 
@@ -9492,7 +9492,7 @@
   (c-name "gtk_icon_theme_prepend_search_path")
   (return-type "none")
   (parameters
-    '("const-gchar*" "path")
+    '("filename_t" "path")
   )
 )
 
@@ -9597,7 +9597,7 @@
 (define-method get_filename
   (of-object "GtkIconInfo")
   (c-name "gtk_icon_info_get_filename")
-  (return-type "const-gchar*")
+  (return-type "filename_t")
 )
 
 (define-method get_builtin_pixbuf
@@ -10170,7 +10170,7 @@
   (c-name "gtk_image_new_from_file")
   (return-type "GtkWidget*")
   (parameters
-    '("const-gchar*" "filename")
+    '("filename_t" "filename")
   )
 )
 
@@ -10243,7 +10243,7 @@
   (c-name "gtk_image_set_from_file")
   (return-type "none")
   (parameters
-    '("const-gchar*" "filename" (null-ok))
+    '("filename_t" "filename" (null-ok))
   )
 )
 
@@ -15097,7 +15097,7 @@
   (c-name "gtk_rc_add_default_file")
   (return-type "none")
   (parameters
-    '("const-gchar*" "filename")
+    '("filename_t" "filename")
   )
 )
 
@@ -15154,7 +15154,7 @@
   (parameters
     '("GtkSettings*" "settings")
     '("GScanner*" "scanner")
-    '("const-gchar*" "pixmap_file")
+    '("filename_t" "pixmap_file")
   )
 )
 
@@ -15162,7 +15162,7 @@
   (c-name "gtk_rc_parse")
   (return-type "none")
   (parameters
-    '("const-gchar*" "filename")
+    '("filename_t" "filename")
   )
 )
 
@@ -15270,28 +15270,28 @@
   (c-name "gtk_rc_find_module_in_path")
   (return-type "gchar*")
   (parameters
-    '("const-gchar*" "module_file")
+    '("filename_t" "module_file")
   )
 )
 
 (define-function rc_get_theme_dir
   (c-name "gtk_rc_get_theme_dir")
-  (return-type "gchar*")
+  (return-type "filename_t")
 )
 
 (define-function rc_get_module_dir
   (c-name "gtk_rc_get_module_dir")
-  (return-type "gchar*")
+  (return-type "filename_t")
 )
 
 (define-function rc_get_im_module_path
   (c-name "gtk_rc_get_im_module_path")
-  (return-type "gchar*")
+  (return-type "filename_t")
 )
 
 (define-function rc_get_im_module_file
   (c-name "gtk_rc_get_im_module_file")
-  (return-type "gchar*")
+  (return-type "filename_t")
 )
 
 (define-function rc_scanner_new
@@ -25433,7 +25433,7 @@
   (c-name "gtk_ui_manager_add_ui_from_file")
   (return-type "guint")
   (parameters
-    '("const-gchar*" "filename")
+    '("filename_t" "filename")
     '("GError**" "error")
   )
 )
@@ -27639,7 +27639,7 @@
   (c-name "gtk_window_set_icon_from_file")
   (return-type "none")
   (parameters
-    '("const-gchar*" "filename")
+    '("filename_t" "filename")
     '("GError**" "error")
   )
 )
@@ -27675,7 +27675,7 @@
   (c-name "gtk_window_set_default_icon_from_file")
   (return-type "none")
   (parameters
-    '("const-gchar*" "filename")
+    '("filename_t" "filename")
     '("GError**" "error")
   )
 )

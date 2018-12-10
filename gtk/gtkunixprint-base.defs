@@ -219,7 +219,7 @@
   (c-name "gtk_print_job_set_source_file")
   (return-type "gboolean")
   (parameters
-    '("const-gchar*" "filename")
+    '("filename_t" "filename")
     '("GError**" "error")
   )
 )

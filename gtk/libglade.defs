@@ -42,7 +42,7 @@
   (is-constructor-of "GladeXML")
   (return-type "GladeXML*")
   (parameters
-    '("const-char*" "fname")
+    '("filename_t" "fname")
     '("const-char*" "root" (null-ok) (default "NULL"))
     '("const-char*" "domain" (null-ok) (default "NULL"))
   )
@@ -64,7 +64,7 @@
   (c-name "glade_xml_construct")
   (return-type "gboolean")
   (parameters
-    '("const-char*" "fname")
+    '("filename_t" "fname")
     '("const-char*" "root" (null-ok) (default "NULL"))
     '("const-char*" "domain" (null-ok) (default "NULL"))
   )
@@ -141,7 +141,7 @@
   (c-name "glade_xml_relative_file")
   (return-type "gchar*")
   (parameters
-    '("const-gchar*" "filename")
+    '("filename_t" "filename")
   )
 )
 
