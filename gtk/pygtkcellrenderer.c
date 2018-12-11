@@ -132,6 +132,7 @@ pygtk_generic_cell_renderer_get_size (GtkCellRenderer *cell,
 				 py_widget, py_cell_area);
     if (!py_ret) {
 	PyErr_Print();
+	Py_DECREF(self);
 	Py_DECREF(py_widget);
 	Py_DECREF(py_cell_area);
 	pyg_gil_state_release(state);
@@ -139,6 +140,7 @@ pygtk_generic_cell_renderer_get_size (GtkCellRenderer *cell,
     }
     Py_DECREF(py_widget);
     Py_DECREF(py_cell_area);
+    Py_DECREF(self);
 
     if (!PyArg_ParseTuple(py_ret, "iiii",
 			  &my_x, &my_y, &my_width, &my_height)) {
@@ -206,6 +208,7 @@ pygtk_generic_cell_renderer_render (GtkCellRenderer      *cell,
     Py_DECREF(py_background_area);
     Py_DECREF(py_cell_area);
     Py_DECREF(py_expose_area);
+    Py_DECREF(self);
 
     pyg_gil_state_release(state);
 }
@@ -254,6 +257,7 @@ out:
     Py_DECREF(py_widget);
     Py_DECREF(py_background_area);
     Py_DECREF(py_cell_area);
+    Py_DECREF(self);
     pyg_gil_state_release(state);
     return ret;
 }
@@ -296,6 +300,7 @@ pygtk_generic_cell_renderer_start_editing (GtkCellRenderer      *cell,
 	Py_DECREF(py_widget);
 	Py_DECREF(py_background_area);
 	Py_DECREF(py_cell_area);
+	Py_DECREF(self);
 	pyg_gil_state_release(state);
 	return NULL;
     }
@@ -303,6 +308,7 @@ pygtk_generic_cell_renderer_start_editing (GtkCellRenderer      *cell,
     Py_DECREF(py_widget);
     Py_DECREF(py_background_area);
     Py_DECREF(py_cell_area);
+    Py_DECREF(self);
     if (py_ret == Py_None) {
 	ret = NULL;
     }
