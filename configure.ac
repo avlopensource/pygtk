@@ -3,7 +3,7 @@ AC_PREREQ(2.52)
 
 dnl the pygtk version number
 m4_define(pygtk_major_version, 2)
-m4_define(pygtk_minor_version, 24)
+m4_define(pygtk_minor_version, 100)
 m4_define(pygtk_micro_version, 0)
 m4_define(pygtk_version, pygtk_major_version.pygtk_minor_version.pygtk_micro_version)
 
@@ -15,7 +15,7 @@ m4_define(gtk_required_version,        2.8.0)
 m4_define(libglade_required_version,   2.5.0)
 m4_define(gtkunixprint_required_version,  2.9.0)
 m4_define(pycairo_required_version,    1.0.2) dnl or 1.1.7
-m4_define(pygobject_required_version,  2.21.3)
+m4_define(pygobject_required_version,  2.100.0)
 
 AC_INIT(pygtk, pygtk_version,
         [http://bugzilla.gnome.org/enter_bug.cgi?product=pygtk])
