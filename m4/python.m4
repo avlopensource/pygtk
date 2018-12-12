@@ -48,9 +48,9 @@ py_exec_prefix=`$PYTHON -c "import sys; print(sys.exec_prefix)"`
 if test -x "$PYTHON-config"; then
 PYTHON_INCLUDES=`$PYTHON-config --includes 2>/dev/null`
 else
-PYTHON_INCLUDES="-I${py_prefix}/include/python${PYTHON_VERSION}"
+PYTHON_INCLUDES="-I${py_prefix}/include/python${PYTHON_VERSION}m"
 if test "$py_prefix" != "$py_exec_prefix"; then
-  PYTHON_INCLUDES="$PYTHON_INCLUDES -I${py_exec_prefix}/include/python${PYTHON_VERSION}"
+  PYTHON_INCLUDES="$PYTHON_INCLUDES -I${py_exec_prefix}/include/python${PYTHON_VERSION}m"
 fi
 fi
 AC_SUBST(PYTHON_INCLUDES)
