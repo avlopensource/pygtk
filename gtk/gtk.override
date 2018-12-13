@@ -400,52 +400,72 @@ _wrap_gtk_init_check(PyGObject *self, PyObject *args)
     char **argv;
 
     /* initialise GTK ... */
-    /* Don't parse sys.argv for now */
-    argc = 0;
-    argv = NULL;
-#if 0
+
+#define FREE_STR_ARRAY(arr, size, elem_free_func) do { \
+    int arr_idx;                                       \
+    for (arr_idx = 0; arr_idx < size; arr_idx++)       \
+        elem_free_func(arr[arr_idx]);                  \
+    g_free(arr);                                       \
+} while (0)
+
     av = PySys_GetObject("argv");
     if (av != NULL) {
-	if (!PyList_Check(av)) {
-	    PyErr_Warn(PyExc_Warning, "ignoring sys.argv: it must be a list of strings");
-	    av = NULL;
-	} else {
-	    argc = PyList_Size(av);
-	    for (i = 0; i < argc; i++)
-               if (!PyString_Check(PyList_GetItem(av, i))) {
-		    PyErr_Warn(PyExc_Warning, "ignoring sys.argv: it must be a list of strings");
-		    av = NULL;
-		    break;
-		}
-	}
+        if (!PyList_Check(av)) {
+            PyErr_Warn(PyExc_Warning, "ignoring sys.argv: it must be a list of strings");
+            av = NULL;
+        } else {
+            argc = PyList_Size(av);
+            for (i = 0; i < argc; i++)
+                if (!PyUnicode_Check(PyList_GetItem(av, i))) {
+                    PyErr_Warn(PyExc_Warning, "ignoring sys.argv: it must be a list of strings");
+                    av = NULL;
+                    break;
+                }
+        }
     }
     if (av != NULL) {
-	argv = g_new(char *, argc);
-	for (i = 0; i < argc; i++)
-           argv[i] = g_strdup(PyString_AsString(PyList_GetItem(av, i)));
-    } else {
-	    argc = 0;
-	    argv = NULL;
+        char **py_argv = g_new(char *, argc);
+        for (i = 0; i < argc; i++) {
+            wchar_t *arg_str = PyUnicode_AsWideCharString(PyList_GetItem(av, i), NULL);
+            if (arg_str == NULL) {
+                FREE_STR_ARRAY(py_argv, i, PyMem_Free);
+                return NULL;
+            }
+            py_argv[i] = Py_EncodeLocale(arg_str, NULL);
+            PyMem_Free(arg_str);
+            if (py_argv[i] == NULL) {
+                FREE_STR_ARRAY(py_argv, i, PyMem_Free);
+                return NULL;
+            }
+        }
+        argv = g_new(char *, argc);
+        for (i = 0; i < argc; i++)
+            argv[i] = g_strdup(py_argv[i]);
+        FREE_STR_ARRAY(py_argv, argc, PyMem_Free);
     }
-#endif
 
     if (!gtk_init_check(&argc, &argv)) {
-	if (argv != NULL) {
-	    for (i = 0; i < argc; i++)
-		g_free(argv[i]);
-	    g_free(argv);
-	}
-	PyErr_SetString(PyExc_RuntimeError, "could not open display");
-	return NULL;
+        if (argv != NULL) {
+            FREE_STR_ARRAY(argv, argc, g_free);
+        }
+        PyErr_SetString(PyExc_RuntimeError, "could not open display");
+        return NULL;
     }
-#if 0
+
     if (argv != NULL) {
-	PySys_SetArgv(argc, argv);
-	for (i = 0; i < argc; i++)
-	    g_free(argv[i]);
-	g_free(argv);
+        wchar_t **py_argv = g_new(wchar_t *, argc);
+        for (i = 0; i < argc; i++) {
+            py_argv[i] = Py_DecodeLocale(argv[i], NULL);
+            if (py_argv[i] == NULL) {
+                FREE_STR_ARRAY(py_argv, i, PyMem_RawFree);
+                return NULL;
+            }
+        }
+        PySys_SetArgv(argc, py_argv);
+        FREE_STR_ARRAY(py_argv, argc, PyMem_RawFree);
     }
-#endif
+
+#undef FREE_STR_ARRAY
 
     Py_INCREF(Py_None);
     return Py_None;
