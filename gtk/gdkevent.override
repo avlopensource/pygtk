@@ -513,7 +513,7 @@ _wrap_gdk_event_tp_getattr(PyObject *self, char *attr)
                                  "time", "x", "y", "axes", "state",
                                  "is_hint", "device", "x_root", "y_root");
         if (!strcmp(attr, "time"))
-            return PyLong_FromLong(event->motion.time);
+            return PyLong_FromUnsignedLong(event->motion.time);
         if (!strcmp(attr, "x"))
             return PyFloat_FromDouble(event->motion.x);
         if (!strcmp(attr, "y"))
@@ -553,7 +553,7 @@ _wrap_gdk_event_tp_getattr(PyObject *self, char *attr)
                                  "time", "x", "y", "axes", "state",
                                  "button", "device", "x_root", "y_root");
         if (!strcmp(attr, "time"))
-            return PyLong_FromLong(event->button.time);
+            return PyLong_FromUnsignedLong(event->button.time);
         if (!strcmp(attr, "x"))
             return PyFloat_FromDouble(event->button.x);
         if (!strcmp(attr, "y"))
@@ -591,7 +591,7 @@ _wrap_gdk_event_tp_getattr(PyObject *self, char *attr)
                                  "time", "state", "keyval", "string",
 				 "hardware_keycode", "group", "is_modifier");
         if (!strcmp(attr, "time"))
-            return PyLong_FromLong(event->key.time);
+            return PyLong_FromUnsignedLong(event->key.time);
         if (!strcmp(attr, "state"))
             return pyg_flags_from_gtype(GDK_TYPE_MODIFIER_TYPE,
                                         event->key.state);
@@ -618,7 +618,7 @@ _wrap_gdk_event_tp_getattr(PyObject *self, char *attr)
         if (!strcmp(attr, "subwindow"))
             return pygobject_new((GObject *)event->crossing.subwindow);
         if (!strcmp(attr, "time"))
-            return PyLong_FromLong(event->crossing.time);
+            return PyLong_FromUnsignedLong(event->crossing.time);
         if (!strcmp(attr, "x"))
             return PyFloat_FromDouble(event->crossing.x);
         if (!strcmp(attr, "y"))
@@ -675,7 +675,7 @@ _wrap_gdk_event_tp_getattr(PyObject *self, char *attr)
             return ret;
         }
         if (!strcmp(attr, "time"))
-            return PyLong_FromLong(event->property.time);
+            return PyLong_FromUnsignedLong(event->property.time);
         if (!strcmp(attr, "state"))
             return pyg_enum_from_gtype(GDK_TYPE_PROPERTY_STATE, event->property.state);
         break;
@@ -708,7 +708,7 @@ _wrap_gdk_event_tp_getattr(PyObject *self, char *attr)
         if (!strcmp(attr, "requestor"))
             return PyLong_FromLong(event->selection.requestor);
         if (!strcmp(attr, "time"))
-            return PyLong_FromLong(event->selection.time);
+            return PyLong_FromUnsignedLong(event->selection.time);
         break;
     case GDK_PROXIMITY_IN:      /*GdkEventProximity         proximity*/
     case GDK_PROXIMITY_OUT:     /*GdkEventProximity         proximity*/
@@ -717,7 +717,7 @@ _wrap_gdk_event_tp_getattr(PyObject *self, char *attr)
                                  "type", "window", "send_event",
                                  "time", "device");
         if (!strcmp(attr, "time"))
-            return PyLong_FromLong(event->proximity.time);
+            return PyLong_FromUnsignedLong(event->proximity.time);
         if (!strcmp(attr, "device"))
             return pygobject_new((GObject *)event->proximity.device);
         break;
@@ -734,7 +734,7 @@ _wrap_gdk_event_tp_getattr(PyObject *self, char *attr)
         if (!strcmp(attr, "context"))
             return pygobject_new((GObject *)event->dnd.context);
         if (!strcmp(attr, "time"))
-            return PyLong_FromLong(event->dnd.time);
+            return PyLong_FromUnsignedLong(event->dnd.time);
         if (!strcmp(attr, "x_root"))
             return PyFloat_FromDouble(event->dnd.x_root);
         if (!strcmp(attr, "y_root"))
@@ -774,7 +774,7 @@ _wrap_gdk_event_tp_getattr(PyObject *self, char *attr)
                                  "time", "x", "y", "state", "direction",
                                  "device", "x_root", "y_root");
         if (!strcmp(attr, "time"))
-            return PyLong_FromLong(event->scroll.time);
+            return PyLong_FromUnsignedLong(event->scroll.time);
         if (!strcmp(attr, "x"))
             return PyFloat_FromDouble(event->scroll.x);
         if (!strcmp(attr, "y"))
@@ -832,9 +832,9 @@ _wrap_gdk_event_tp_getattr(PyObject *self, char *attr)
             return ret;
         }
         if (!strcmp(attr, "time"))
-            return PyLong_FromLong(event->owner_change.time);
+            return PyLong_FromUnsignedLong(event->owner_change.time);
         if (!strcmp(attr, "selection_time"))
-            return PyLong_FromLong(event->owner_change.selection_time);
+            return PyLong_FromUnsignedLong(event->owner_change.selection_time);
 	break;
     case GDK_GRAB_BROKEN:
         if (!strcmp(attr, "__members__"))
