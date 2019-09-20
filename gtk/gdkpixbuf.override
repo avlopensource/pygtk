@@ -103,7 +103,8 @@ _wrap_gdk_pixbuf_get_pixels_array(PyGObject *self)
 #ifdef HAVE_NUMPY
     GdkPixbuf *pixbuf = GDK_PIXBUF(self->obj);
     PyArrayObject *array;
-    int dims[3] = { 0, 0, 3 };
+    npy_intp dims[3] = { 0, 0, 3 };
+    npy_intp strides[3] = { PyArray_UBYTE, PyArray_UBYTE, PyArray_UBYTE };
 
     if (!have_numpy())
 	return NULL;
@@ -112,8 +113,11 @@ _wrap_gdk_pixbuf_get_pixels_array(PyGObject *self)
     dims[1] = gdk_pixbuf_get_width(pixbuf);
     if (gdk_pixbuf_get_has_alpha(pixbuf))
         dims[2] = 4;
-    array = (PyArrayObject *)PyArray_FromDimsAndData(3, dims, PyArray_UBYTE,
-                                        (char *)gdk_pixbuf_get_pixels(pixbuf));
+
+    PyArray_Descr *descr = PyArray_DescrFromType(NPY_UBYTE);
+    array = PyArray_NewFromDescr(&PyArray_Type, descr, 3, dims, strides,
+                                 (char *)(gdk_pixbuf_get_pixels(pixbuf)), 0, NULL);
+
     if (array == NULL)
         return NULL;
 
