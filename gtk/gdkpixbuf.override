@@ -53,7 +53,7 @@ _wrap_gdk_pixbuf_render_pixmap_and_mask(PyGObject *self, PyObject *args,
         Py_INCREF(Py_None);
         pymask = Py_None;
     }
-    
+
     ret = Py_BuildValue("(NN)", pypixmap, pymask);
     return ret;
 }
@@ -116,7 +116,8 @@ _wrap_gdk_pixbuf_get_pixels_array(PyGObject *self)
 
     PyArray_Descr *descr = PyArray_DescrFromType(NPY_UBYTE);
     array = PyArray_NewFromDescr(&PyArray_Type, descr, 3, dims, strides,
-                                 (char *)(gdk_pixbuf_get_pixels(pixbuf)), 0, NULL);
+                                 (char *)(gdk_pixbuf_get_pixels(pixbuf)),
+                                 NPY_ARRAY_DEFAULT, NULL);
 
     if (array == NULL)
         return NULL;
@@ -173,7 +174,7 @@ _wrap_gdk_pixbuf_save(PyGObject *self, PyObject *args,
         guint len;
         Py_ssize_t pos = 0, i = 0;
         PyObject *key, *value;
-        
+
         len = PyDict_Size(py_options);
         option_keys = g_new(gchar *, len + 1);
         option_values = g_new(gchar *, len + 1);
@@ -192,7 +193,7 @@ _wrap_gdk_pixbuf_save(PyGObject *self, PyObject *args,
             option_values[i] = PyUnicode_AsUTF8(value);
             i++;
         }
-        
+
         option_keys[len] = NULL;
         option_values[len] = NULL;
     }
@@ -205,10 +206,10 @@ _wrap_gdk_pixbuf_save(PyGObject *self, PyObject *args,
     g_free(option_keys);
     g_free(option_values);
     g_free(filename);
- 
+
     if (pyg_error_check(&error))
         return NULL;
-    
+
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -234,7 +235,7 @@ pixbuf_save_func(const gchar *buf,
 
     else
         ret = PyObject_CallFunction(data->callback, "s#", buf, (Py_ssize_t) count);
-    
+
     if (ret == NULL) {
         PyErr_Print();
         return FALSE;
@@ -268,7 +269,7 @@ _wrap_gdk_pixbuf_save_to_callback(PyGObject *self, PyObject *args,
         Py_ssize_t len;
         Py_ssize_t pos = 0, i = 0;
         PyObject *key, *value;
-        
+
         len = PyDict_Size(py_options);
         option_keys = g_new(gchar *, len + 1);
         option_values = g_new(gchar *, len + 1);
@@ -286,7 +287,7 @@ _wrap_gdk_pixbuf_save_to_callback(PyGObject *self, PyObject *args,
             option_values[i] = PyUnicode_AsUTF8(value);
             i++;
         }
-        
+
         option_keys[len] = NULL;
         option_values[len] = NULL;
     }
@@ -295,10 +296,10 @@ _wrap_gdk_pixbuf_save_to_callback(PyGObject *self, PyObject *args,
                                  type, option_keys, option_values, &error);
     g_free(option_keys);
     g_free(option_values);
- 
+
     if (pyg_error_check(&error))
         return NULL;
-    
+
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -321,16 +322,16 @@ _wrap_gdk_pixbuf_new_from_data(PyObject *self, PyObject *args,
     GdkPixbuf *pixbuf;
     PyObject *ret;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, 
-				     "s#iiiiii:pixbuf_new_from_data", kwlist, 
-				     &data, &data_len, &colorspace, 
-				     &has_alpha, &bits_per_sample, 
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
+				     "s#iiiiii:pixbuf_new_from_data", kwlist,
+				     &data, &data_len, &colorspace,
+				     &has_alpha, &bits_per_sample,
 				     &width, &height, &rowstride))
 	return NULL;
     required_len = height*rowstride;
     if (data_len < required_len) {
-	PyErr_Format(PyExc_ValueError, 
-		      "data length (%ld) is less then required by the other parameters (%ld)", 
+	PyErr_Format(PyExc_ValueError,
+		      "data length (%ld) is less then required by the other parameters (%ld)",
 		      (long int) data_len, (long int) required_len);
 	return NULL;
     }
@@ -338,9 +339,9 @@ _wrap_gdk_pixbuf_new_from_data(PyObject *self, PyObject *args,
     if (!data_copy)
 	return PyErr_NoMemory();
     memcpy(data_copy, data, required_len);
-    pixbuf = gdk_pixbuf_new_from_data(data_copy, colorspace, has_alpha, 
-				      bits_per_sample, width, height, 
-				      rowstride, 
+    pixbuf = gdk_pixbuf_new_from_data(data_copy, colorspace, has_alpha,
+				      bits_per_sample, width, height,
+				      rowstride,
 				      (GdkPixbufDestroyNotify )g_free, NULL);
     ret = pygobject_new((GObject *)pixbuf);
     g_object_unref(pixbuf);
@@ -349,7 +350,7 @@ _wrap_gdk_pixbuf_new_from_data(PyObject *self, PyObject *args,
 %%
 override gdk_pixbuf_new_from_array kwargs
 static PyObject *
-_wrap_gdk_pixbuf_new_from_array(PyObject *self, PyObject *args, 
+_wrap_gdk_pixbuf_new_from_array(PyObject *self, PyObject *args,
 				PyObject *kwargs)
 {
 #ifdef HAVE_NUMPY
@@ -367,9 +368,9 @@ _wrap_gdk_pixbuf_new_from_array(PyObject *self, PyObject *args,
     if (!have_numpy())
 	return NULL;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, 
-				      "O!ii:pixbuf_new_from_array", kwlist, 
-				      &PyArray_Type, &array, &colorspace, 
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs,
+				      "O!ii:pixbuf_new_from_array", kwlist,
+				      &PyArray_Type, &array, &colorspace,
 				      &bits_per_sample))
 	return NULL;
     if (array->descr->type_num != PyArray_CHAR
@@ -384,7 +385,7 @@ _wrap_gdk_pixbuf_new_from_array(PyObject *self, PyObject *args,
     height = array->dimensions[0];
     width = array->dimensions[1];
     has_alpha = array->dimensions[2] == 4;
-    pixbuf = gdk_pixbuf_new(colorspace, has_alpha, bits_per_sample, 
+    pixbuf = gdk_pixbuf_new(colorspace, has_alpha, bits_per_sample,
 			    width, height);
     src = (guchar*) array->data;
     dst = gdk_pixbuf_get_pixels(pixbuf);
@@ -511,13 +512,13 @@ _wrap_gdk_pixbuf_loader_write(PyGObject *self,
     if (count < 0 || count > buf_len) {
         count = buf_len;
     }
-    
+
     ret = gdk_pixbuf_loader_write(GDK_PIXBUF_LOADER(self->obj),
                                   buf, count, &error);
-    
+
     if (pyg_error_check(&error))
         return NULL;
-    
+
     return PyBool_FromLong(ret);
 }
 %%
@@ -617,7 +618,7 @@ pygtk_make_pixbuf_format_dict(GdkPixbufFormat *format)
     value = PyList_New(0);
     for (i = 0; aval[i] != NULL; i++) {
 	PyObject *string_item = PyUnicode_FromString(aval[i]);
-	    
+
 	PyList_Append(value, string_item);
 	Py_DECREF(string_item);
     }
@@ -629,7 +630,7 @@ pygtk_make_pixbuf_format_dict(GdkPixbufFormat *format)
     value = PyList_New(0);
     for (i = 0; aval[i] != NULL; i++) {
 	PyObject *string_item = PyUnicode_FromString(aval[i]);
-	    
+
 	PyList_Append(value, string_item);
 	Py_DECREF(string_item);
     }
@@ -672,14 +673,14 @@ _wrap_gdk_pixbuf_fill(PyGObject *self, PyObject *args, PyObject *kwargs)
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O:GdkPixbuf.fill", kwlist, &py_pixel))
         return NULL;
-    
+
     if (PyLong_Check(py_pixel))
 	gdk_pixbuf_fill(GDK_PIXBUF(self->obj), PyLong_AsUnsignedLong(py_pixel));
     else {
 	PyErr_SetString(PyExc_TypeError, "pixel must be an int or a long");
 	return NULL;
     }
-    
+
     Py_INCREF(Py_None);
     return Py_None;
 }
@@ -754,7 +755,7 @@ _wrap_gdk_pixbuf_get_from_drawable2(PyObject *self,
 				     &dest_x, &dest_y,
 				     &width, &height))
         return NULL;
-    
+
     if (py_pixbuf && pygobject_check(py_pixbuf, &PyGdkPixbuf_Type))
         pixbuf = GDK_PIXBUF(py_pixbuf->obj);
     else if ((PyObject *)py_pixbuf != Py_None) {
@@ -762,14 +763,14 @@ _wrap_gdk_pixbuf_get_from_drawable2(PyObject *self,
 			"pixbuf should be a GdkPixbuf or None");
         return NULL;
     }
-    
+
     ret = gdk_pixbuf_get_from_drawable(pixbuf,
 				       GDK_DRAWABLE(src->obj),
 				       GDK_COLORMAP(cmap->obj),
 				       src_x, src_y,
 				       dest_x, dest_y,
 				       width, height);
-    
+
     /* pygobject_new handles NULL checking */
     return pygobject_new((GObject *)ret);
 }
@@ -804,9 +805,9 @@ _wrap_gdk_pixbuf_add_alpha(PyGObject *self, PyObject *args, PyObject *kwargs)
         Py_XDECREF(exc_value);
         Py_XDECREF(exc_traceback);
     }
-    
+
     ret = gdk_pixbuf_add_alpha(GDK_PIXBUF(self->obj), substitute_color, r, g, b);
-    
+
     py_ret = pygobject_new((GObject *)ret);
     if (ret != NULL)
         g_object_unref(ret);
