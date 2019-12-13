@@ -4,7 +4,7 @@ AC_PREREQ(2.52)
 dnl the pygtk version number
 m4_define(pygtk_major_version, 2)
 m4_define(pygtk_minor_version, 100)
-m4_define(pygtk_micro_version, 2)
+m4_define(pygtk_micro_version, 3)
 m4_define(pygtk_version, pygtk_major_version.pygtk_minor_version.pygtk_micro_version)
 
 dnl versions of packages we require ...
@@ -317,7 +317,7 @@ if test "x$have_pycairo" = "xtrue"; then
   AM_CONDITIONAL(HAVE_GTK_2_16, $have_gtk_216)
   AC_SUBST(HAVE_GTK_2_16)
   AC_DEFINE([HAVE_GTK_2_16], [$have_gtk_216], [If Gtk 2.16 was found])
-  
+
   dnl check for gtk 2.18
   PKG_CHECK_MODULES(GTK218, gtk+-2.0 >= 2.18.0,
 	  HAVE_GTK_218="yes", HAVE_GTK_218="no")
