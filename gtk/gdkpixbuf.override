@@ -229,10 +229,10 @@ pixbuf_save_func(const gchar *buf,
     PyObject *ret;
 
     if (data->user_data)
-        ret = PyObject_CallFunction(data->callback, "s#O", buf, (Py_ssize_t) count, data->user_data);
+        ret = PyObject_CallFunction(data->callback, "y#O", buf, (Py_ssize_t) count, data->user_data);
 
     else
-        ret = PyObject_CallFunction(data->callback, "s#", buf, (Py_ssize_t) count);
+        ret = PyObject_CallFunction(data->callback, "y#", buf, (Py_ssize_t) count);
     
     if (ret == NULL) {
         PyErr_Print();
@@ -321,7 +321,7 @@ _wrap_gdk_pixbuf_new_from_data(PyObject *self, PyObject *args,
     PyObject *ret;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, 
-				     "s#iiiiii:pixbuf_new_from_data", kwlist, 
+				     "y#iiiiii:pixbuf_new_from_data", kwlist, 
 				     &data, &data_len, &colorspace, 
 				     &has_alpha, &bits_per_sample, 
 				     &width, &height, &rowstride))
@@ -503,7 +503,7 @@ _wrap_gdk_pixbuf_loader_write(PyGObject *self,
     GError *error = NULL;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs,
-                                     "s#|i:GdkPixbufLoader.write",
+                                     "y#|i:GdkPixbufLoader.write",
                                      kwlist, &buf, &buf_len, &count))
         return NULL;
 
